@@ -1,473 +1,298 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-bs-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Opportunity Intelligence — Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<title>Opportunity Intelligence</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.1.1/dist/css/tabler.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.1.1/dist/js/tabler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
 <style>
-:root{
-  --bg:#0a0e1a;--bg2:#0d1322;--card:rgba(23,30,48,.72);--card-solid:#141b2e;
-  --border:rgba(120,140,190,.16);--border-hi:rgba(120,160,255,.35);
-  --text:#eaeffa;--muted:#7d8aa8;--faint:#556180;
-  --accent:#5b8cff;--accent2:#8b6cff;--good:#3ddc97;--warn:#ffb454;--bad:#ff6b6b;
-  --chip:rgba(91,140,255,.12);--radius:14px;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
-  background-image:radial-gradient(1200px 500px at 80% -10%,rgba(91,140,255,.09),transparent),
-                   radial-gradient(900px 420px at 10% -5%,rgba(139,108,255,.07),transparent);
-  background-attachment:fixed}
-a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
-::selection{background:rgba(91,140,255,.3)}
-.wrap{max-width:1280px;margin:0 auto;padding:0 24px 80px}
-.topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(10,14,26,.78);border-bottom:1px solid var(--border)}
-.topbar-in{max-width:1280px;margin:0 auto;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:12px}
-.logo{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:19px;box-shadow:0 4px 18px rgba(91,140,255,.35)}
-.brand h1{font-size:17px;font-weight:800;letter-spacing:-.02em}
-.brand h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.brand .tag{display:inline-block;margin-left:8px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--good);background:rgba(61,220,151,.12);border:1px solid rgba(61,220,151,.3);padding:2px 8px;border-radius:99px;vertical-align:2px}
-.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good);animation:pulse 2s infinite}
-@keyframes pulse{50%{opacity:.4}}
-.nav{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--border);padding:4px;border-radius:12px}
-.nav button{background:transparent;border:none;color:var(--muted);padding:7px 16px;border-radius:9px;cursor:pointer;font-size:13.5px;font-weight:600;font-family:inherit;transition:.15s}
-.nav button:hover{color:var(--text)}
-.nav button.active{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 2px 12px rgba(91,140,255,.35)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:14px;margin:26px 0}
-.stat{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden;transition:.2s;backdrop-filter:blur(8px)}
-.stat:hover{border-color:var(--border-hi);transform:translateY(-2px)}
-.stat::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--sc,var(--accent))}
-.stat .n{font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1}
-.stat .l{font-size:12px;color:var(--muted);margin-top:6px;font-weight:500}
-.stat .d{font-size:11px;margin-top:3px;color:var(--faint)}
-.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:20px;backdrop-filter:blur(8px)}
-.panel h2{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-.panel h2 .ic{opacity:.75}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.grid3{display:grid;grid-template-columns:2fr 1fr;gap:20px}
-@media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
-.row{margin:11px 0}
-.row .rh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
-.row .rh b{font-variant-numeric:tabular-nums}
-.row .rh .nm{display:flex;align-items:center;gap:7px}
-.track{height:9px;border-radius:99px;background:rgba(255,255,255,.05);overflow:hidden}
-.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:width 1s cubic-bezier(.22,1,.36,1)}
-.fill.g{background:linear-gradient(90deg,#2fbf7f,var(--good))}
-.fill.w{background:linear-gradient(90deg,#d98f2b,var(--warn))}
-.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
-table{width:100%;border-collapse:collapse;font-size:13.5px}
-thead th{position:sticky;top:0;background:var(--card-solid);color:var(--faint);text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.07em;padding:11px 14px;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:top}
-tbody tr{transition:background .12s}
-tbody tr:hover{background:rgba(91,140,255,.05)}
-tbody tr:last-child td{border-bottom:none}
-.title-cell a{font-weight:600;color:var(--text)}
-.title-cell a:hover{color:var(--accent)}
-.title-cell .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px;align-items:center}
-.chip{display:inline-block;background:var(--chip);border:1px solid rgba(91,140,255,.18);border-radius:6px;padding:1px 8px;font-size:11px;color:#9db8ee;font-weight:500}
-.org{font-size:12px;color:var(--muted)}
-.note{font-size:12px;color:var(--faint);margin-top:6px;max-width:560px;line-height:1.5}
-.score-pill{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:26px;border-radius:8px;font-weight:700;font-size:13.5px;font-variant-numeric:tabular-nums}
-.sp-hi{background:rgba(61,220,151,.13);color:var(--good);border:1px solid rgba(61,220,151,.3)}
-.sp-mid{background:rgba(255,180,84,.12);color:var(--warn);border:1px solid rgba(255,180,84,.3)}
-.sp-lo{background:rgba(125,138,168,.1);color:var(--muted);border:1px solid var(--border)}
-.badge{display:inline-block;border-radius:6px;padding:2px 9px;font-size:11px;font-weight:600}
-.b-new{background:rgba(91,140,255,.13);color:#8fb4ff}.b-open{background:rgba(61,220,151,.13);color:var(--good)}
-.b-reviewing{background:rgba(255,180,84,.13);color:var(--warn)}.b-applied{background:rgba(139,108,255,.15);color:#b39dff}
-.b-done{background:rgba(61,220,151,.13);color:var(--good)}.b-rejected{background:rgba(255,107,107,.13);color:var(--bad)}
-.b-verified{background:rgba(61,220,151,.1);color:var(--good);border:1px solid rgba(61,220,151,.25)}
-.b-pending{background:rgba(125,138,168,.1);color:var(--muted);border:1px solid var(--border)}
-.dl{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:13px}
-.dl-hot{color:var(--bad);font-weight:600}.dl-soon{color:var(--warn);font-weight:600}.dl-past{color:var(--bad);opacity:.7}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
-.search{position:relative;flex:1;min-width:220px;max-width:340px}
-.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.5}
-.search input{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 14px 9px 38px;font-size:13.5px;font-family:inherit;outline:none;transition:.15s}
-.search input:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(91,140,255,.12)}
-select{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 12px;font-size:13px;font-family:inherit;outline:none;cursor:pointer}
-select:focus{border-color:var(--border-hi)}
-.count-chip{font-size:12px;color:var(--muted);background:var(--bg2);border:1px solid var(--border);padding:8px 13px;border-radius:10px;font-variant-numeric:tabular-nums}
-.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;transition:.15s;box-shadow:0 2px 10px rgba(91,140,255,.25)}
-.btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(91,140,255,.4)}
-.btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text);box-shadow:none}
-.btn.ghost:hover{border-color:var(--border-hi);background:var(--bg2)}
-input[type=text],textarea{background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:9px 12px;font-size:13px;width:100%;font-family:inherit;outline:none}
-input[type=text]:focus,textarea:focus{border-color:var(--border-hi);box-shadow:0 0 0 3px rgba(91,140,255,.12)}
-textarea{font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6}
-label{font-size:12px;color:var(--muted);display:block;margin:14px 0 5px;font-weight:600}
-.muted{color:var(--muted);font-size:12.5px;line-height:1.55}
-.empty{color:var(--faint);text-align:center;padding:44px 10px;font-size:13.5px}
-.codeblock{background:#070a14;border:1px solid var(--border);border-radius:12px;padding:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.65;overflow-x:auto;white-space:pre;color:#9db8ee;margin-top:12px;max-height:420px;overflow-y:auto}
-.ddl{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13.5px}
-.ddl:last-child{border-bottom:none}
-.ddl .lft{min-width:0}
-.ddl .lft a{font-weight:600;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ddl .lft .cat{margin-top:4px}
-.ddl .when{text-align:right;flex-shrink:0}
-.ddl .when .num{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
-.ddl .when .lbl{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
-.chart{display:flex;align-items:flex-end;gap:5px;height:130px;margin-top:14px}
-.chart .bar-c{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
-.chart .bar-v{width:100%;max-width:34px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,var(--accent),rgba(91,140,255,.25));min-height:3px;position:relative}
-.chart .bar-v:hover::after{content:attr(data-n);position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--text);background:var(--card-solid);border:1px solid var(--border);padding:1px 7px;border-radius:6px;white-space:nowrap;z-index:5}
-.chart .bar-l{font-size:9.5px;color:var(--faint);white-space:nowrap}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--card-solid);border:1px solid rgba(61,220,151,.4);color:var(--text);padding:13px 20px;border-radius:12px;font-weight:600;font-size:13.5px;opacity:0;transform:translateY(10px);transition:.3s;z-index:99;box-shadow:0 8px 30px rgba(0,0,0,.5)}
-.toast.err{border-color:rgba(255,107,107,.5)}
-.toast.show{opacity:1;transform:none}
-.ev{padding:11px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:12px;align-items:baseline}
-.ev:last-child{border:none}
-.ev .t{color:var(--faint);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap;min-width:130px}
-.ev b{color:var(--accent);font-weight:600}
-.ev .msg{color:var(--muted)}
-footer{color:var(--faint);font-size:12px;text-align:center;margin-top:44px;padding-top:24px;border-top:1px solid var(--border)}
-footer .frow{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-bottom:8px}
-.view{animation:fadein .35s ease}
-@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .brand-gradient { background: linear-gradient(45deg,#06bfd4,#7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight:700; }
+  .stat-card { cursor: default; transition: transform .15s; }
+  .stat-card:hover { transform: translateY(-2px); }
+  .score-pill { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .deadline-past { text-decoration: line-through; color: var(--tblr-danger) !important; }
+  .deadline-soon { color: var(--tblr-warning) !important; font-weight: 600; }
+  .chart-box { position: relative; height: 240px; }
+  .ddl-row { display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem; border-radius:.5rem; }
+  .ddl-row:hover { background: var(--tblr-bg-surface-secondary); }
+  .ddl-days { font-size:1.4rem; font-weight:800; font-variant-numeric: tabular-nums; min-width:3.2rem; text-align:right; }
+  .hide { display:none !important; }
+  .row-link { color: inherit; text-decoration: none; }
+  .row-link:hover { color: var(--tblr-primary); }
+  .tag-chip { background: var(--tblr-active-bg); border:1px solid var(--tblr-border-color); border-radius:2rem; padding:.05rem .5rem; font-size:.72rem; }
+  pre.api-code { background:#111927; border-radius:.5rem; padding:1rem; font-size:.78rem; overflow-x:auto; color:#a5d6ff; }
 </style>
 </head>
 <body>
-<div class="topbar"><div class="topbar-in">
-  <div class="brand">
-    <div class="logo">◈</div>
-    <h1>Opportunity <em>Intelligence</em><span class="tag">Free 24/7</span></h1>
-  </div>
-  <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
-    <div class="sync"><span class="dot"></span><span id="genAt">Đang tải…</span></div>
-    <div class="nav">
-      <button data-v="overview" class="active">Tổng quan</button>
-      <button data-v="list">Cơ hội</button>
-      <button data-v="send">Agent API</button>
-      <button data-v="activity">Lịch sử</button>
-    </div>
-  </div>
-</div></div>
-
-<div class="wrap">
-<div id="view-overview" class="view">
-  <div class="stats" id="stats"></div>
-  <div class="grid3">
-    <div class="panel">
-      <h2><span class="ic">⏳</span> Hạn nộp — 18 tuần tới</h2>
-      <div class="chart" id="chart"></div>
-      <div id="upcoming" style="margin-top:18px"></div>
-    </div>
-    <div>
-      <div class="panel"><h2><span class="ic">◈</span> Theo loại</h2><div id="byCat"></div></div>
-      <div class="panel"><h2><span class="ic">⬡</span> Theo trạng thái</h2><div id="byStatus"></div></div>
-      <div class="panel"><h2><span class="ic">⬢</span> Agent đóng góp</h2><div id="byAgent"></div></div>
-    </div>
-  </div>
-</div>
-
-<div id="view-list" class="view" style="display:none">
-  <div class="toolbar">
-    <div class="search">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      <input type="text" id="fq" placeholder="Tìm tiêu đề, tổ chức, tag…">
-    </div>
-    <select id="fstatus" onchange="renderItems()"><option value="">Mọi trạng thái</option><option>new</option><option>open</option><option>reviewing</option><option>applied</option><option>done</option><option>rejected</option></select>
-    <select id="fcat" onchange="renderItems()"><option value="">Mọi loại</option></select>
-    <select id="fagent" onchange="renderItems()"><option value="">Mọi agent</option></select>
-    <select id="fmin" onchange="renderItems()"><option value="">Mọi điểm</option><option value="80">≥ 80</option><option value="65">≥ 65</option><option value="50">≥ 50</option></select>
-    <span class="count-chip" id="countChip"></span>
-  </div>
-  <div class="panel" style="padding:0;overflow:hidden">
-    <div class="tbl-wrap" style="border:none;border-radius:0"><div id="itemsTbl"></div></div>
-  </div>
-</div>
-
-<div id="view-send" class="view" style="display:none">
-  <div class="panel">
-    <h2><span class="ic">⇡</span> Agent gửi dữ liệu bằng GitHub API</h2>
-    <p class="muted">Mỗi lần agent gửi = 1 commit vào <b>data.json</b>. Miễn phí 5.000 lần/giờ, lịch sử vĩnh viễn, không ai xoá được dữ liệu của bạn.</p>
-    <div class="codeblock" id="apiSnippets"></div>
-  </div>
-  <div class="grid2">
-    <div class="panel">
-      <h2><span class="ic">✎</span> Gửi nhanh từ trình duyệt</h2>
-      <p class="muted">Token chỉ lưu trong trình duyệt này, không gửi đi đâu khác.</p>
-      <label>GitHub token (scope: repo)</label><input type="text" id="ghToken" placeholder="ghp_...">
-      <label>Danh sách items (JSON — 1 object hoặc mảng)</label>
-      <textarea id="importBox" rows="7" placeholder='{"title":"Học bổng...","url":"https://...","category":"scholarship","score":75,"deadline":"2027-05-01","source_agent":"Muse"}'></textarea>
-      <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn" onclick="browserSend()">Gửi lên GitHub</button>
-        <button class="btn ghost" onclick="downloadJsonTemplate()">Tải template JSON</button>
+<div class="page">
+  <!-- SIDEBAR -->
+  <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+    <div class="container-fluid">
+      <h1 class="navbar-brand mb-0 h1"><i class="ti ti-sparkles text-cyan me-1"></i><span class="brand-gradient">OppScan</span></h1>
+      <div class="navbar-nav flex-row d-lg-none"><button class="nav-link" data-bs-toggle="collapse" data-bs-target="#smenu"><i class="ti ti-menu-2"></i></button></div>
+      <div class="collapse navbar-collapse" id="smenu">
+        <ul class="navbar-nav pt-lg-3">
+          <li class="nav-item"><a class="nav-link active" data-tab="ov" href="#"><i class="ti ti-chart-dots me-1"></i> Tổng quan</a></li>
+          <li class="nav-item"><a class="nav-link" data-tab="list" href="#"><i class="ti ti-list-details me-1"></i> Cơ hội <span class="badge bg-cyan-lt ms-1" id="navCount"></span></a></li>
+          <li class="nav-item"><a class="nav-link" data-tab="agents" href="#"><i class="ti ti-robots me-1"></i> Agent & API</a></li>
+          <li class="nav-item"><a class="nav-link" data-tab="backup" href="#"><i class="ti ti-database-export me-1"></i> Backup</a></li>
+          <li class="nav-item mt-3 px-3"><a class="btn btn-github w-100" href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank"><i class="ti ti-brand-github me-1"></i> Repo</a></li>
+        </ul>
       </div>
     </div>
-    <div class="panel">
-      <h2><span class="ic">⛨</span> Backup & khôi phục</h2>
-      <p class="muted">Dữ liệu sống trong repo GitHub của bạn — lịch sử commit là backup tự nhiên. Thêm 1 lớp an toàn: tải snapshot định kỳ.</p>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn ghost" onclick="downloadData()">⭳ Tải data.json đầy đủ</button>
-        <a class="btn ghost" href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank" rel="noopener">⌂ Mở repo</a>
+  </aside>
+
+  <div class="page-wrapper">
+    <!-- HEADER -->
+    <header style="position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);" class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
+      <div class="container-xl">
+        <h2 class="page-title mb-0" id="pageTitle">Tổng quan</h2>
+        <div class="navbar-nav flex-row order-md-last align-items-center ms-auto">
+          <span class="badge bg-green-lt me-2"><i class="ti ti-bolt me-1"></i>Free 24/7</span>
+          <span class="text-secondary" id="genAt"></span>
+        </div>
       </div>
-      <div style="margin-top:18px" class="muted">
-        <b style="color:var(--text)">Khôi phục ở nơi khác:</b> đẩy file data.json này vào bất kỳ repo/host nào — dashboard đọc trực tiếp, không cần cấu hình thêm.
+    </header>
+
+    <div class="page-body container-xl">
+      <!-- OVERVIEW -->
+      <div id="tab-ov">
+        <div class="row row-deck row-cards mb-3" id="statCards"></div>
+        <div class="row row-deck row-cards">
+          <div class="col-12"><div class="card"><div class="card-body"><div class="subheader mb-2">Deadline 18 tuần tới</div><div class="chart-box"><canvas id="chWeeks"></canvas></div></div></div></div>
+          <div class="col-lg-6"><div class="card h-full"><div class="card-body"><div class="subheader mb-2">Hạn sắp đến</div><div id="upcoming" style="max-height:300px;overflow:auto"></div></div></div></div>
+          <div class="col-lg-6"><div class="card h-full"><div class="card-body"><div class="subheader mb-2">Phân bố</div><div class="row"><div class="col-6"><canvas id="chCat" height="200"></canvas></div><div class="col-6"><canvas id="chAgents" height="200"></canvas></div></div></div></div></div>
+        </div>
+      </div>
+
+      <!-- LIST -->
+      <div id="tab-list" class="hide">
+        <div class="card">
+          <div class="card-header">
+            <div class="row g-2 w-100 align-items-center">
+              <div class="col-lg-4"><div class="input-icon"><span class="input-icon-addon"><i class="ti ti-search"></i></span><input id="q" class="form-control" placeholder="Tìm tiêu đề, tổ chức, tag…"></div></div>
+              <div class="col-lg-2"><select id="fCat" class="form-select"></select></div>
+              <div class="col-lg-2"><select id="fStatus" class="form-select"><option value="">Mọi trạng thái</option></select></div>
+              <div class="col-lg-2"><select id="fAgent" class="form-select"></select></div>
+              <div class="col-lg-2"><select id="sort" class="form-select"><option value="score">Điểm ↓</option><option value="deadline">Deadline ↑</option><option value="new">Mới nhất</option></select></div>
+            </div>
+          </div>
+          <div class="card-body py-2 d-flex justify-content-between align-items-center">
+            <span class="badge bg-secondary-lt" id="countChip"></span>
+            <label class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="onlyOpen" checked><span class="form-check-label">Chỉ đang mở</span></label>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+              <thead><tr><th>Điểm</th><th>Tiêu đề</th><th>Loại</th><th>Agent</th><th>Deadline</th><th>Trạng thái</th><th>Tags</th></tr></thead>
+              <tbody id="itemsTbl"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- AGENTS -->
+      <div id="tab-agents" class="hide">
+        <div class="row row-cards">
+          <div class="col-12"><div class="card"><div class="card-body">
+            <div class="subheader mb-3">Agent đang kết nối</div>
+            <div class="table-responsive"><table class="table table-vcenter"><thead><tr><th>Agent</th><th>Số mục</th><th>Đã nộp</th><th>Hoạt động cuối</th></tr></thead><tbody id="agentTbl"></tbody></table></div>
+          </div></div></div>
+          <div class="col-lg-6"><div class="card"><div class="card-body">
+            <div class="subheader mb-2">Cách gửi từ agent (mẫu — thay TOKEN)</div>
+            <pre class="api-code" id="snip"></pre>
+            <button class="btn btn-primary btn-sm" id="copySnip"><i class="ti ti-copy me-1"></i>Copy script</button>
+          </div></div></div>
+          <div class="col-lg-6"><div class="card"><div class="card-body">
+            <div class="subheader mb-2">Định dạng một mục dữ liệu</div>
+            <pre class="api-code">{
+  "id": "chuoi-ky-tu-khong-dau",
+  "title": "Tiêu đề cơ hội",
+  "org": "Tổ chức",
+  "url": "https://…",
+  "category": "scholarship|research|grant|startup|gig|bounty|other",
+  "score": 0-100,
+  "deadline": "YYYY-MM-DD" hoặc null,
+  "status": "open|applied|closed",
+  "source_agent": "tên-agent",
+  "tags": ["tag1","tag2"],
+  "notes": "ghi chú ngắn"
+}</pre>
+            <div class="text-secondary small">Trùng theo <code>title+url+deadline</code> → tự gộp, không lo gửi lặp.</div>
+          </div></div></div>
+        </div>
+      </div>
+
+      <!-- BACKUP -->
+      <div id="tab-backup" class="hide">
+        <div class="card"><div class="card-body">
+          <div class="subheader mb-2">Sao lưu dữ liệu</div>
+          <p class="text-secondary">Dữ liệu sống trong repo GitHub của bạn — mỗi lần agent gửi là 1 commit có lịch sử vĩnh viễn. Tải snapshot hiện tại bất cứ lúc nào.</p>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" id="dlJson"><i class="ti ti-download me-1"></i>Tải data.json</button>
+            <button class="btn" id="dlCsv"><i class="ti ti-file-download me-1"></i>Tải CSV</button>
+            <a class="btn btn-github" href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank"><i class="ti ti-brand-github me-1"></i>Xem lịch sử commit</a>
+          </div>
+        </div></div>
       </div>
     </div>
   </div>
 </div>
-
-<div id="view-activity" class="view" style="display:none">
-  <div class="panel">
-    <h2><span class="ic">≡</span> 30 commit gần nhất trên data.json</h2>
-    <div id="eventsTbl"><div class="empty">Đang tải…</div></div>
-  </div>
-</div>
-
-<footer>
-  <div class="frow"><span>◈ Opportunity Intelligence</span><span>·</span><span>GitHub Pages + GitHub API</span><span>·</span><span style="color:var(--good)">0đ vĩnh viễn</span><span>·</span><span><a href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank" rel="noopener">repo</a></span></div>
-  Dữ liệu thuộc sở hữu của bạn — lịch sử đầy đủ, khôi phục được ở bất cứ đâu
-</footer>
-</div>
-
-<div class="toast" id="toast"></div>
 
 <script>
-const CFG_DEFAULT = { high_fit: 65, due_days: 30 };
-let CFG = {...CFG_DEFAULT};
-let DATA = { items: [] };
-const REPO = 'kotobuki09/opportunity-dashboard-free';
-const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const daysUntil = (d) => d ? Math.round((new Date(d) - new Date()) / 864e5) : null;
+const CATS = {scholarship:'Học bổng/Fellowship',research:'Research visit',grant:'Grant',startup:'Startup',gig:'Kiếm tiền',bounty:'Bounty',other:'Khác'};
+const CATCOLORS = {scholarship:'#06b6d4',research:'#7c3aed',grant:'#10b981',startup:'#f59e0b',gig:'#3b82f6',bounty:'#ef4444',other:'#6b7280'};
+const STATUSES = {'':'Mọi trạng thái',new:'Mới',interested:'Quan tâm',applying:'Đang làm hồ sơ',submitted:'Đã nộp',done:'Đã tham gia',skip:'Bỏ qua'};
+const STATUS_COLOR = {new:'bg-cyan-lt',interested:'bg-blue-lt',applying:'bg-yellow-lt',submitted:'bg-indigo-lt',done:'bg-green-lt',skip:'bg-secondary-lt'};
+let DATA = [], ITEMS = [], charts = {};
 
-function toast(msg, err) {
-  const t = $('toast'); t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
-  setTimeout(() => t.className = 'toast', 2800);
-}
-document.querySelectorAll('.nav button').forEach(b => b.onclick = () => showView(b.dataset.v));
-function showView(v) {
-  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.v === v));
-  ['overview','list','send','activity'].forEach(x => { const el = $('view-' + x); el.style.display = x === v ? '' : 'none'; if (x===v) { el.classList.remove('view'); void el.offsetWidth; el.classList.add('view'); } });
-  if (v === 'activity') loadCommits();
-}
+const $ = s => document.querySelector(s);
+const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const days = d => d ? Math.ceil((new Date(d) - Date.now())/864e5) : null;
+const dl = (name, text, type='application/json') => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); };
 
-async function boot() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('od_cfg') || 'null');
-    if (saved) CFG = {...CFG_DEFAULT, ...saved};
-    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/main/data.json?cb=${Date.now()}`);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    DATA = await r.json();
-    $('genAt').textContent = `${DATA.count} mục · cập nhật ${fmtSync(DATA.updated)}`;
-    initFilters(); renderOverview(); renderItems(); renderApiSnippets();
-  } catch (e) {
-    $('genAt').textContent = 'Lỗi tải dữ liệu: ' + e.message;
-  }
-}
-function fmtSync(iso) {
-  if (!iso) return '—';
-  const m = Math.round((Date.now() - new Date(iso)) / 6e4);
-  if (m < 1) return 'vừa xong'; if (m < 60) return m + ' phút trước';
-  const h = Math.round(m / 60); if (h < 24) return h + ' giờ trước';
-  return Math.round(h / 24) + ' ngày trước';
-}
+function load(){ return fetch('data.json?ts='+Date.now()).then(r=>r.json()); }
 
-function initFilters() {
-  const cats = [...new Set(DATA.items.map(i => i.category).filter(Boolean))].sort();
-  const agents = [...new Set(DATA.items.map(i => i.source_agent || 'unknown'))].sort();
-  $('fcat').innerHTML = '<option value="">Mọi loại</option>' + cats.map(c => `<option>${esc(c)}</option>`).join('');
-  $('fagent').innerHTML = '<option value="">Mọi agent</option>' + agents.map(a => `<option>${esc(a)}</option>`).join('');
-}
-function filtered() {
-  let it = DATA.items;
-  if ($('fq').value) { const q = $('fq').value.toLowerCase(); it = it.filter(i => (i.title + ' ' + (i.org||'') + ' ' + String(i.tags||'')).toLowerCase().includes(q)); }
-  if ($('fstatus').value) it = it.filter(i => i.status === $('fstatus').value);
-  if ($('fcat').value) it = it.filter(i => i.category === $('fcat').value);
-  if ($('fagent').value) it = it.filter(i => (i.source_agent||'unknown') === $('fagent').value);
-  if ($('fmin').value) it = it.filter(i => (i.score||0) >= +$('fmin').value);
-  return it;
-}
-$('fq').addEventListener('input', () => { renderItems(); });
+function render(){
+  ITEMS = DATA.items || [];
+  $('#genAt').textContent = `${ITEMS.length} mục · cập nhật ${new Date(DATA.generatedAt||Date.now()).toLocaleString('vi-VN')}`;
+  $('#navCount').textContent = ITEMS.length;
+  $('#fCat').innerHTML = '<option value="">Mọi loại</option>' + Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  $('#fStatus').innerHTML = Object.entries(STATUSES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
+  const agents = [...new Set(ITEMS.map(i=>i.source_agent).filter(Boolean))].sort();
+  $('#fAgent').innerHTML = '<option value="">Mọi agent</option>' + agents.map(a=>`<option>${esc(a)}</option>`).join('');
+  $('#snip').textContent = `# Gửi 1 cơ hội về dashboard (Python — thay TOKEN & id duy nhất)
+import json, urllib.request, base64
 
-function renderOverview() {
-  const it = DATA.items;
-  const open = it.filter(i => !['applied','done','rejected'].includes(i.status));
-  const hi = it.filter(i => (i.score||0) >= CFG.high_fit);
-  const due = open.filter(i => { const d = daysUntil(i.deadline); return d !== null && d >= 0 && d <= CFG.due_days; });
-  const overdue = open.filter(i => { const d = daysUntil(i.deadline); return d !== null && d < 0; });
-  const newN = it.filter(i => i.first_seen && (Date.now() - new Date(i.first_seen)) < 7*864e5);
-  $('stats').innerHTML = [
-    ['Tổng cơ hội', it.length, 'Đang theo dõi', 'var(--accent)'],
-    ['Đang mở', open.length, `${open.length ? Math.round(open.length/it.length*100) : 0}% tổng số`, 'var(--good)'],
-    [`Phù hợp cao ≥${CFG.high_fit}`, hi.length, 'theo điểm rule', 'var(--accent2)'],
-    ['Mới 7 ngày', newN.length, 'tính từ first_seen', 'var(--good)'],
-    [`Sắp hạn ≤${CFG.due_days} ngày`, due.length, 'cần hành động', 'var(--warn)'],
-    ['Quá hạn', overdue.length, 'hạn đã qua', 'var(--bad)'],
-  ].map(([l,n,d,c]) => `<div class="stat" style="--sc:${c}"><div class="n" style="color:${c}">${n}</div><div class="l">${l}</div><div class="d">${d}</div></div>`).join('');
+TOKEN = "GITHUB_TOKEN_CỦA_AGENT"
+REPO  = "kotobuki09/opportunity-dashboard-free"
 
-  const byCat = {}; it.forEach(i => byCat[i.category||'other'] = (byCat[i.category||'other']||0)+1);
-  const cats = Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
-  const maxC = Math.max(1, ...cats.map(x=>x[1]));
-  $('byCat').innerHTML = cats.map(([c,n]) =>
-    `<div class="row"><div class="rh"><span class="nm">${esc(c)}</span><b>${n}</b></div><div class="track"><div class="fill" style="width:${(n/maxC*100).toFixed(1)}%"></div></div></div>`).join('');
-
-  const stNames = { new:'Mới', open:'Đang mở', reviewing:'Đang rà soát', applied:'Đã nộp', done:'Hoàn tất', rejected:'Bỏ qua' };
-  const bySt = {}; it.forEach(i => bySt[i.status||'new'] = (bySt[i.status||'new']||0)+1);
-  const sts = Object.entries(bySt).sort((a,b)=>b[1]-a[1]);
-  const maxS = Math.max(1, ...sts.map(x=>x[1]));
-  const stColors = { open:'g', applied:'g', done:'g', reviewing:'w', rejected:'w' };
-  $('byStatus').innerHTML = sts.map(([c,n]) =>
-    `<div class="row"><div class="rh"><span class="nm">${stNames[c]||esc(c)}</span><b>${n}</b></div><div class="track"><div class="fill ${stColors[c]||''}" style="width:${(n/maxS*100).toFixed(1)}%"></div></div></div>`).join('');
-
-  const byAg = {}; it.forEach(i => byAg[i.source_agent||'unknown'] = (byAg[i.source_agent||'unknown']||0)+1);
-  const ags = Object.entries(byAg).sort((a,b)=>b[1]-a[1]);
-  const maxA = Math.max(1, ...ags.map(x=>x[1]));
-  $('byAgent').innerHTML = ags.map(([a,n]) =>
-    `<div class="row"><div class="rh"><span class="nm">⬢ ${esc(a)}</span><b>${n}</b></div><div class="track"><div class="fill g" style="width:${(n/maxA*100).toFixed(1)}%"></div></div></div>`).join('');
-
-  renderDue(it, due);
-}
-
-function renderDue(all, due) {
-  const weeks = {};
-  all.forEach(i => { const d = daysUntil(i.deadline); if (d !== null && d >= 0 && d <= 126) { const w = Math.floor(d/7); weeks[w] = (weeks[w]||0)+1; } });
-  let chart = '';
-  for (let w = 0; w < 18; w++) {
-    const n = weeks[w]||0; const h = n ? Math.max(6, Math.round(n/8*100)) : 2;
-    chart += `<div class="bar-c"><div class="bar-v" style="height:${h}%" data-n="${n} — tuần T+${w}"></div><span class="bar-l">${w===0?'nay':'T+'+w}</span></div>`;
-  }
-  $('chart').innerHTML = chart;
-
-  const sorted = [...due].sort((a,b) => a.deadline.localeCompare(b.deadline));
-  $('upcoming').innerHTML = sorted.length ? sorted.slice(0,10).map(i => {
-    const d = daysUntil(i.deadline);
-    const cls = d <= 7 ? 'dl-hot' : d <= 14 ? 'dl-soon' : '';
-    return `<div class="ddl"><div class="lft"><a href="${esc(i.url||'#')}" target="_blank" rel="noopener">${esc(i.title)}</a><div class="cat"><span class="chip">${esc(i.category||'')}</span> <span class="chip">${esc(i.source_agent||'')}</span></div></div><div class="when"><div class="num ${cls}">${d}</div><div class="lbl">ngày</div></div></div>`;
-  }).join('') + (sorted.length > 10 ? `<div class="empty" style="padding:14px">…và ${sorted.length-10} hạn nữa trong 30 ngày</div>` : '')
-  : '<div class="empty">Không có hạn nào trong 30 ngày tới</div>';
-}
-
-function renderItems() {
-  const it = filtered().sort((a,b) => (b.score||0)-(a.score||0));
-  $('countChip').textContent = it.length + ' mục';
-  if (!it.length) { $('itemsTbl').innerHTML = '<div class="empty">Không có mục khớp bộ lọc</div>'; return; }
-  const st = { new:'b-new', open:'b-open', reviewing:'b-reviewing', applied:'b-applied', done:'b-done', rejected:'b-rejected' };
-  const rows = it.slice(0, 300).map(i => {
-    const sc = (i.score||0) >= CFG.high_fit ? 'sp-hi' : (i.score||0) >= 45 ? 'sp-mid' : 'sp-lo';
-    const d = daysUntil(i.deadline);
-    const dc = d !== null && d < 0 ? 'dl-past' : d !== null && d <= 7 ? 'dl-hot' : d !== null && d <= 14 ? 'dl-soon' : '';
-    const tagStr = Array.isArray(i.tags) ? i.tags.join(',') : String(i.tags||'');
-    const tags = tagStr.split(',').filter(Boolean).slice(0,3).map(t=>`<span class="chip">${esc(t)}</span>`).join('');
-    const note = i.note ? `<div class="note">${esc(String(i.note).slice(0,220))}${String(i.note).length>220?'…':''}</div>` : '';
-    return `<tr><td class="title-cell"><a href="${esc(i.url||'#')}" target="_blank" rel="noopener">${esc(i.title)}</a><div class="meta">${tags}<span class="org">${esc(i.org||'')}</span></div>${note}</td>
-    <td><span class="chip">${esc(i.category||'—')}</span></td>
-    <td><span class="score-pill ${sc}">${i.score||0}</span></td>
-    <td class="dl ${dc}">${d===null?'—':(d<0?Math.abs(d)+' ngày qua':d+' ngày')}</td>
-    <td style="white-space:nowrap"><span class="badge ${st[i.status]||'b-new'}">${esc(i.status||'new')}</span><br><span class="badge ${i.review_status==='verified'?'b-verified':'b-pending'}" style="margin-top:4px;display:inline-block">${esc(i.review_status||'pending')}</span></td>
-    <td class="org">${esc(i.source_agent||'')}</td></tr>`;
-  }).join('');
-  $('itemsTbl').innerHTML = `<table><thead><tr><th>Cơ hội</th><th>Loại</th><th>Điểm</th><th>Hạn</th><th>Trạng thái</th><th>Agent</th></tr></thead><tbody>${rows}</tbody></table>` +
-    (it.length > 300 ? `<div class="empty">…và ${it.length-300} mục nữa — dùng bộ lọc để thu hẹp</div>` : '');
-}
-
-function renderApiSnippets() {
-  $('apiSnippets').textContent =
-`# ═══════════ AGENT GỬI DỮ LIỆU (miễn phí 5.000 lần/giờ) ═══════════
-# Repo: ${REPO} (nhánh main, file data.json)
-# Token: tạo tại github.com/settings/tokens — chỉ cần quyền "repo"
-
-python3 - <<'PY'
-import json, base64, urllib.request
-TOKEN = "YOUR_GITHUB_TOKEN"
-REPO  = "${REPO}"
-
-# 1. Đọc data.json hiện tại
 data = json.load(urllib.request.urlopen(
-    f"https://raw.githubusercontent.com/{REPO}/main/data.json"))
-
-# 2. Thêm cơ hội mới (id duy nhất, tiền tố = tên agent)
-data["items"].append({
-    "id": "muse-20261030-001",
-    "title": "Ví dụ cơ hội từ Muse",
-    "url": "https://example.com",
-    "category": "scholarship",
-    "tags": ["ai", "2027"],
-    "score": 75,
-    "deadline": "2027-05-01",
-    "status": "new",
-    "review_status": "pending",
-    "source_agent": "Muse",
-    "note": "Mô tả ngắn, điều kiện, cần chuẩn bị gì",
-    "first_seen": "2026-10-30",
-})
-data["count"] = len(data["items"])
-data["updated"] = "2026-10-30T00:00:00Z"
-
-# 3. Đẩy lên GitHub (mỗi lần gửi = 1 commit có lịch sử)
-api = f"https://api.github.com/repos/{REPO}/contents/data.json"
-cur = json.load(urllib.request.urlopen(urllib.request.Request(api)))
-req = urllib.request.Request(api, method="PUT")
-req.add_header("Authorization", "Bearer " + TOKEN)
-req.add_header("Content-Type", "application/json")
-body = json.dumps({
-    "message": "agent Muse: +1 cơ hội",
-    "content": base64.b64encode(json.dumps(data, ensure_ascii=False).encode()).decode(),
-    "sha": cur["sha"],
-}).encode()
-print("Kết quả:", urllib.request.urlopen(req, body).status)
-PY`;
+    f"https://api.github.com/repos/{REPO}/contents/data.json"))
+obj = json.loads(base64.b64decode(data["content"]))
+item = {
+  "id": "muse-daad-short-2027",
+  "title": "DAAD Postdoc AI Fellowship",
+  "url": "https://…",
+  "category": "scholarship", "score": 85,
+  "deadline": "2026-11-30", "status": "open",
+  "source_agent": "muse", "tags": ["AI", "postdoc"],
+}
+if not any(x["id"] == item["id"] for x in obj["items"]):
+    obj["items"].append(item)
+obj["generatedAt"] = "AUTO"
+req = urllib.request.Request(
+    f"https://api.github.com/repos/{REPO}/contents/data.json",
+    method="PUT",
+    data=json.dumps({
+        "message": f"agent: {item['source_agent']} them {item['id']}",
+        "content": base64.b64encode(json.dumps(
+            obj, ensure_ascii=False).encode()).decode(),
+        "sha": data["sha"],
+    }).encode(),
+    headers={"Authorization": "Bearer " + TOKEN,
+             "Content-Type": "application/json"})
+print(urllib.request.urlopen(req).status)  # 200 = OK`;
+  renderStats(); renderCharts(); renderAgents(); renderTable();
 }
 
-function downloadJsonTemplate() {
-  const t = { title:'Ví dụ học bổng', url:'https://example.com', org:'', category:'scholarship', tags:['stem'], score:70, deadline:'2027-03-01', status:'new', review_status:'pending', source_agent:'Muse', note:'', first_seen:new Date().toISOString().slice(0,10) };
-  const b = new Blob([JSON.stringify(t, null, 2)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'item-template.json'; a.click();
+function renderStats(){
+  const open = ITEMS.filter(i=>(i.status||'open')==='open' || ['new','interested','applying'].includes(i.status));
+  const hi = open.filter(i=>(i.score||0)>=65);
+  const soon = open.filter(i=>{const d=days(i.deadline); return d!==null&&0<=d&&d<=30;});
+  const past = open.filter(i=>{const d=days(i.deadline); return d!==null&&d<0;});
+  const nAgents = new Set(ITEMS.map(i=>i.source_agent).filter(Boolean)).size;
+  const cards = [
+    ['ti-door-enter','Đang mở', open.length,'text-cyan'],
+    ['ti-star','Phù hợp cao (≥65)', hi.length,'text-yellow'],
+    ['ti-calendar-time','Sắp hạn 30 ngày', soon.length,'text-orange'],
+    ['ti-alert-triangle','Quá hạn', past.length,'text-red'],
+    ['ti-robots','Agent gửi', nAgents,'text-blue'],
+    ['ti-stack','Tổng cơ hội', ITEMS.length,'text-lime'],
+  ];
+  $('#statCards').innerHTML = cards.map(([ic,label,val,cl])=>`
+    <div class="col-6 col-md-4 col-xl-2"><div class="card stat-card"><div class="card-body p-3">
+      <div class="d-flex align-items-center mb-1"><span class="avatar avatar-sm bg-azure-lt me-2"><i class="ti ${ic} ${cl}"></i></span><span class="text-secondary small">${label}</span></div>
+      <div class="h1 m-0">${val}</div>
+    </div></div></div>`).join('');
 }
 
-async function browserSend() {
-  const token = $('ghToken').value.trim();
-  if (!token) { toast('Cần GitHub token', true); return; }
-  let parsed;
-  try { parsed = JSON.parse($('importBox').value); } catch (e) { toast('JSON không hợp lệ', true); return; }
-  const arr = Array.isArray(parsed) ? parsed : (parsed.items || [parsed]);
-  try {
-    const sr = await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`, { headers: { Authorization: 'Bearer ' + token } });
-    const sj = await sr.json();
-    if (!sj.sha) { toast('Không đọc được data.json từ repo', true); return; }
-    const fresh = JSON.parse(decodeURIComponent(escape(atob(sj.content))));
-    const exist = new Set(fresh.items.map(i => i.id));
-    let added = 0;
-    for (const it of arr) {
-      if (!it.title) continue;
-      if (!it.id) it.id = 'man-' + Date.now() + '-' + Math.floor(Math.random()*999);
-      if (exist.has(it.id)) continue;
-      if (!it.first_seen) it.first_seen = new Date().toISOString().slice(0,10);
-      if (!it.status) it.status = 'new';
-      if (!it.review_status) it.review_status = 'pending';
-      fresh.items.push(it); added++;
-    }
-    if (!added) { toast('Không có item mới (trùng id hoặc thiếu title)', true); return; }
-    fresh.count = fresh.items.length; fresh.updated = new Date().toISOString();
-    const body = { message: `dashboard: +${added} items (browser)`, content: btoa(unescape(encodeURIComponent(JSON.stringify(fresh, null, 1)))), sha: sj.sha };
-    const pr = await fetch(`https://api.github.com/repos/${REPO}/contents/data.json`, { method: 'PUT', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    if (pr.ok) { toast(`✓ Đã gửi ${added} items`); $('importBox').value = ''; setTimeout(()=>location.reload(), 1400); }
-    else { const e = await pr.json(); toast('Lỗi GitHub: ' + (e.message||pr.status), true); }
-  } catch (e) { toast('Lỗi: ' + e.message, true); }
+function renderCharts(){
+  Object.values(charts).forEach(c=>c&&c.destroy());
+  const weeks = {};
+  ITEMS.forEach(i=>{const d=days(i.deadline); if(d!==null&&0<=d&&d<18*7){const w=Math.floor(d/7); weeks[w]=(weeks[w]||0)+1;}});
+  const labels=[],vals=[];
+  for(let w=0;w<18;w++){ labels.push(w===0?'Tuần này':'+'+w+'w'); vals.push(weeks[w]||0); }
+  charts.weeks = new Chart($('#chWeeks'), {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(6,191,212,.6)', borderRadius:4}]}, options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}}}});
+  const cats={}; ITEMS.forEach(i=>{const c=i.category||'other'; cats[c]=(cats[c]||0)+1;});
+  const ck=Object.keys(cats).sort((a,b)=>cats[b]-cats[a]);
+  charts.cat = new Chart($('#chCat'), {type:'doughnut', data:{labels:ck.map(k=>CATS[k]||k), datasets:[{data:ck.map(k=>cats[k]), backgroundColor:ck.map(k=>CATCOLORS[k]||'#6b7280')}]}, options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}}}}}});
+  const ag={}; ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; ag[a]=(ag[a]||0)+1;});
+  const ak=Object.keys(ag).sort((a,b)=>ag[b]-ag[a]).slice(0,8);
+  charts.ag = new Chart($('#chAgents'), {type:'bar', data:{labels:ak, datasets:[{data:ak.map(k=>ag[k]), backgroundColor:'rgba(124,58,237,.6)', borderRadius:4}]}, options:{indexAxis:'y', plugins:{legend:{display:false}}}});
+  const up = ITEMS.filter(i=>i.deadline&&(i.status||'open')==='open'&&days(i.deadline)>=-1).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,15);
+  $('#upcoming').innerHTML = up.map(i=>{const d=days(i.deadline);
+    return `<div class="ddl-row"><span class="ddl-days ${d<=7?'text-danger':d<=14?'text-warning':'text-secondary'}">${d}</span>
+      <div style="flex:1;min-width:0"><a class="row-link d-block text-truncate" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a>
+      <span class="text-secondary small">${esc(CATS[i.category]||i.category||'')}</span></div>
+      <span class="badge ${STATUS_COLOR[i.status]||'bg-secondary-lt'}">${esc(STATUSES[i.status]||'Mới')}</span></div>`;}).join('');
 }
 
-async function loadCommits() {
-  try {
-    const r = await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=30&path=data.json`);
-    const cs = await r.json();
-    if (!Array.isArray(cs)) { $('eventsTbl').innerHTML = '<div class="empty">Không tải được commits</div>'; return; }
-    $('eventsTbl').innerHTML = cs.map(c =>
-      `<div class="ev"><span class="t">${new Date(c.commit.author.date).toLocaleString('vi-VN')}</span><span><b>${esc(c.commit.author.name)}</b> <span class="msg">${esc(c.commit.message)}</span></span></div>`
-    ).join('') || '<div class="empty">Chưa có commit nào</div>';
-  } catch (e) { $('eventsTbl').innerHTML = '<div class="empty">Lỗi tải commits</div>'; }
+function renderAgents(){
+  const ag={};
+  ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; (ag[a]=ag[a]||{n:0,ap:0,last:''}); ag[a].n++; if(i.status==='submitted')ag[a].ap++; const t=String(i.updatedAt||''); if(t>ag[a].last)ag[a].last=t;});
+  $('#agentTbl').innerHTML = Object.entries(ag).sort((a,b)=>b[1].n-a[1].n).map(([a,s])=>`
+    <tr><td><span class="avatar avatar-sm bg-blue-lt me-2"><i class="ti ti-robot"></i></span>${esc(a)}</td>
+    <td>${s.n}</td><td>${s.ap}</td><td class="text-secondary">${s.last?new Date(s.last).toLocaleString('vi-VN'):'—'}</td></tr>`).join('');
 }
 
-function downloadData() {
-  const b = new Blob([JSON.stringify(DATA, null, 1)], {type:'application/json'});
-  const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'data-backup-' + new Date().toISOString().slice(0,10) + '.json'; a.click();
+function renderTable(){
+  const q=($('#q').value||'').toLowerCase(), fc=$('#fCat').value, fs=$('#fStatus').value, fa=$('#fAgent').value, sort=$('#sort').value, onlyOpen=$('#onlyOpen').checked;
+  let rows = ITEMS.filter(i=>{
+    if(q && !((i.title+' '+(i.org||'')+' '+String(Array.isArray(i.tags)?i.tags.join(' '):i.tags||'')+' '+(i.notes||'')).toLowerCase().includes(q))) return false;
+    if(fc && (i.category||'other')!==fc) return false;
+    if(fs && (i.status||'new')!==fs) return false;
+    if(fa && (i.source_agent||'')!==fa) return false;
+    if(onlyOpen && ['submitted','done','skip','closed','applied'].includes(i.status)) return false;
+    return true;});
+  const cmp = {score:(a,b)=>(b.score||0)-(a.score||0),
+    deadline:(a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'),
+    new:(a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))};
+  rows.sort(cmp[sort]);
+  $('#countChip').textContent = rows.length + ' mục';
+  $('#itemsTbl').innerHTML = rows.slice(0,400).map(i=>{
+    const s=i.score||0, sc=s>=65?'bg-green-lt':s>=45?'bg-yellow-lt':'bg-secondary-lt';
+    const d=days(i.deadline), dcls=d===null?'':d<0?'deadline-past':d<=14?'deadline-soon':'';
+    const tags=String(Array.isArray(i.tags)?i.tags.join(','):i.tags||'').split(',').filter(Boolean).slice(0,3);
+    return `<tr>
+      <td><span class="badge ${sc} score-pill">${s}</span></td>
+      <td style="max-width:24rem"><a class="row-link fw-medium d-block text-truncate" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-secondary small">${esc(i.org||'')}</span></td>
+      <td><span class="tag-chip" style="border-color:${CATCOLORS[i.category]||'#6b7280'};color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
+      <td class="text-secondary small">${esc(i.source_agent||'—')}</td>
+      <td class="${dcls}">${i.deadline?i.deadline+(d!==null?` <span class="text-secondary small">(${d}d)</span>`:''):'—'}</td>
+      <td><span class="badge ${STATUS_COLOR[i.status]||'bg-cyan-lt'}">${esc(STATUSES[i.status]||'Mới')}</span></td>
+      <td class="text-secondary">${tags.map(t=>`<span class="tag-chip me-1">${esc(t)}</span>`).join('')}</td>
+    </tr>`;}).join('');
 }
 
-boot();
+document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click', e=>{
+  e.preventDefault();
+  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active', x===el));
+  ['ov','list','agents','backup'].forEach(t=>$('#tab-'+t).classList.toggle('hide', t!==el.dataset.tab));
+  $('#pageTitle').textContent = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', backup:'Backup'}[el.dataset.tab];
+  window.scrollTo(0,0);
+}));
+['q','fCat','fStatus','fAgent','sort','onlyOpen'].forEach(id=>$('#'+id).addEventListener('input', renderTable));
+$('#dlJson').onclick = ()=>dl('data.json', JSON.stringify(DATA,null,2));
+$('#dlCsv').onclick = ()=>{
+  const ks=['id','title','org','url','category','score','deadline','status','source_agent'];
+  const csv=[ks.join(',')].concat(ITEMS.map(i=>ks.map(k=>'"'+String(i[k]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
+  dl('opportunities.csv', csv, 'text/csv');};
+$('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
+
+load().then(render);
 </script>
 </body>
 </html>
