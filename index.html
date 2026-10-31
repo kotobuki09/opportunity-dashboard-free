@@ -335,7 +335,7 @@ function renderCharts(){
   charts.ag.render();
 
   const up = ITEMS.filter(i=>i.deadline&&isOpen(i)).map(i=>({i,d:days(i.deadline)}))
-    .filter(x=>x.d>=0).sort((a,b)=>a.d-b.d).slice(0,12);
+    .filter(x=>x.d>=0).sort((a,b)=>(a.d-b.d)||((b.i.score||0)-(a.i.score||0))).slice(0,10);
   $('#upcoming').innerHTML = up.length ? up.map(({i,d})=>`
     <a href="${esc(i.url||'#')}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
       <span class="text-lg font-extrabold tabular-nums w-10 text-right ${d<0?'text-red-400':d<=7?'text-orange-400':d<=14?'text-amber-300':'text-mut'}">${d}</span>
