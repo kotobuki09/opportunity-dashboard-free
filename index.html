@@ -37,6 +37,13 @@ tailwind.config = {
   .hide{display:none!important}
   a{color:inherit}
   .glow { box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+  #drawer { position:fixed; inset:0; z-index:100; display:none; }
+  #drawer.open { display:block; }
+  #drawerBg { position:absolute; inset:0; background:rgba(0,0,0,.6); backdrop-filter:blur(2px); }
+  #drawerPanel { position:absolute; top:0; right:0; height:100%; width:min(480px,100%); background:hsl(240 10% 5.5%); border-left:1px solid hsl(240 3.7% 15.9%); padding:1.5rem; overflow-y:auto; }
+  #drawerPanel h2 { font-size:1.05rem; font-weight:700; line-height:1.4; margin-bottom:.25rem; }
+  #drawerPanel .kv { display:flex; justify-content:space-between; gap:1rem; padding:.5rem 0; border-bottom:1px solid hsl(240 3.7% 12%); font-size:.82rem; }
+  #drawerPanel .kv b { color:hsl(240 5% 64.9%); font-weight:500; }
 </style>
 </head>
 <body class="bg-bg text-fg font-sans antialiased">
@@ -221,6 +228,18 @@ tailwind.config = {
   </div>
 </div>
 
+<!-- DETAIL DRAWER -->
+<div id="drawer" aria-hidden="true">
+  <div id="drawerBg" onclick="closeDetail()"></div>
+  <div id="drawerPanel" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-between mb-3">
+      <span class="text-xs text-mut">Chi tiết cơ hội</span>
+      <button type="button" class="text-mut hover:text-fg" onclick="closeDetail()" aria-label="Đóng">✕</button>
+    </div>
+    <div id="drawerBody"></div>
+  </div>
+</div>
+
 <script>
 const CATS = {scholarship:'Học bổng',research:'Research visit',grant:'Grant',startup:'Startup',gig:'Kiếm tiền',bounty:'Bounty',other:'Khác'};
 const CATCOLORS = {scholarship:'#38bdf8',research:'#a78bfa',grant:'#34d399',startup:'#fbbf24',gig:'#60a5fa',bounty:'#f87171',other:'#9ca3af'};
@@ -387,9 +406,9 @@ function renderTable(){
   let rows = ITEMS.filter(i=>{
     if(q && !((i.title+' '+(i.org||'')+' '+String(Array.isArray(i.tags)?i.tags.join(' '):i.tags||'')+' '+(i.notes||'')).toLowerCase().includes(q))) return false;
     if(fc && (i.category||'other')!==fc) return false;
-    if(fs && (i.status||'new')!==fs) return false;
+    if(fs && (effStatus(i))!==fs) return false;
     if(fa && (i.source_agent||'')!==fa) return false;
-    if(onlyOpen && !OPENISH(i.status)) return false;
+    if(onlyOpen && !OPENISH(effStatus(i))) return false;
     return true;});
   const cmp = {score:(a,b)=>(Number(b.score)||0)-(Number(a.score)||0),
     deadline:(a,b)=>(a.deadline&&days(a.deadline)!==null?a.deadline:'9999').localeCompare(b.deadline&&days(b.deadline)!==null?b.deadline:'9999'),
@@ -406,11 +425,11 @@ function renderTable(){
     const tags=(Array.isArray(i.tags)?i.tags:[]).slice(0,3);
     return `<tr>
       <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${esc(String(Number.isFinite(s)?s:0))}</span></td>
-      <td class="px-4 py-3"><a class="block font-medium truncate hover:text-sky-400" href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
+      <td class="px-4 py-3"><a class="block font-medium truncate hover:text-sky-400 cursor-pointer" onclick="openDetail('${esc(i.id)}')" data-url="${esc(safeUrl(i.url))}">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
       <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
       <td class="px-4 py-3 text-xs whitespace-nowrap">${dhtml}</td>
-      <td class="px-4 py-3"><span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span></td>
+      <td class="px-4 py-3"><span class="badge-b ${SBADGE[effStatus(i)]||SBADGE.new}">${esc(STATUSES[effStatus(i)]||'Mới')}</span></td>
       <td class="px-4 py-3 hidden lg:table-cell">${(Array.isArray(i.tags)?i.tags.slice(0,3):[]).map(t=>`<span class="text-[11px] text-mut border border-bd rounded-full px-2 py-0.5 mr-1">${esc(t)}</span>`).join('')}</td>
     </tr>`;}).join('');
 }
@@ -439,7 +458,7 @@ function renderPlan(){
       <div class="w-14 shrink-0 text-xs font-bold ${w===0?'text-orange-400':'text-mut'}">${w===0?'Tuần này':'T+'+w}</div>
       <div class="flex-1 min-w-0">${list.length?list.map(i=>`
         <a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 py-1 group">
-          <span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span>
+          <span class="badge-b ${SBADGE[effStatus(i)]||SBADGE.new}">${esc(STATUSES[effStatus(i)]||'Mới')}</span>
           <span class="text-[13px] truncate group-hover:text-sky-400">${esc(i.title)}</span>
           <span class="ml-auto text-[11px] text-mut tabular-nums shrink-0">${i.deadline}</span>
         </a>`).join(''):'<div class="text-xs text-mut py-1">— trống —</div>'}</div></div>`;
@@ -464,6 +483,34 @@ function renderPlan(){
       <span class="text-xs tabular-nums shrink-0 ${d<=14?'text-orange-400':'text-mut'}">${d}d</span>
     </a>`).join(''):'<div class="text-xs text-mut p-3">Không có mục nào cần hành động ngay.</div>';
 }
+
+// ---- Detail drawer + status override (localStorage) ----
+const SKEY='oppscan_status';
+const getOverrides=()=>{ try{return JSON.parse(localStorage.getItem(SKEY)||'{}')}catch(e){return{}} };
+const setStatus=(id,st)=>{ const o=getOverrides(); if(st) o[id]=st; else delete o[id]; localStorage.setItem(SKEY,JSON.stringify(o)); renderTable(); renderPlan(); };
+const effStatus=i=>getOverrides()[i.id]||i.status||'new';
+
+function openDetail(id){
+  const i=ITEMS.find(x=>x.id===id); if(!i) return;
+  const d=days(i.deadline);
+  const st=effStatus(i);
+  const rows=[['Loại',CATS[i.category]||i.category||'—'],['Agent gửi',i.source_agent||'—'],['Deadline',i.deadline?`${i.deadline} (${d===null?'?':d+' ngày'})`:'—'],['Điểm',String(i.score||0)],['Trạng thái',''],['Ghi chú',i.notes||'—']];
+  $('#drawerBody').innerHTML = `
+    <h2>${esc(i.title)}</h2>
+    <div class="mb-3">${Array.isArray(i.tags)?i.tags.map(t=>`<span class="text-[11px] text-mut border border-bd rounded-full px-2 py-0.5 mr-1">${esc(t)}</span>`).join(''):''}</div>
+    ${rows.map(([k,v])=> k==='Trạng thái'
+      ? `<div class="kv"><b>${k}</b><select id="dStatus" class="inp" style="padding:.2rem .5rem;font-size:.75rem">${Object.entries(STATUSES).filter(([k2])=>k2).map(([k2,v2])=>`<option value="${k2}" ${k2===st?'selected':''}>${v2}</option>`).join('')}</select></div>`
+      : `<div class="kv"><b>${k}</b><span class="text-right">${esc(String(v))}</span></div>`).join('')}
+    <div class="mt-4 flex flex-wrap gap-2">
+      ${safeUrl(i.url)!=='#'?`<a class="px-3 py-1.5 rounded-lg bg-acc text-white text-xs font-semibold" href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer">Mở link gốc ↗</a>`:''}
+      <button type="button" class="px-3 py-1.5 rounded-lg border border-bd text-xs font-semibold" onclick="copyDetail('${esc(i.id)}')">Copy JSON</button>
+    </div>`;
+  $('#dStatus').addEventListener('change', e=>{ setStatus(i.id, e.target.value); openDetail(id); });
+  $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden','false');
+}
+function closeDetail(){ $('#drawer').classList.remove('open'); $('#drawer').setAttribute('aria-hidden','true'); }
+function copyDetail(id){ const i=ITEMS.find(x=>x.id===id); if(i) navigator.clipboard&&navigator.clipboard.writeText(JSON.stringify(i,null,2)); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
 
 const TITLES = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', plan:'Lộ trình', backup:'Dữ liệu'};
 document.querySelectorAll('#nav .nav-item').forEach(el=>el.addEventListener('click', ()=>{
