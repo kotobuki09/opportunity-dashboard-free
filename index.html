@@ -298,8 +298,8 @@ $('#dlCsv').onclick = ()=>{
   dl('opportunities.csv', csv, 'text/csv');};
 $('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
 
-window.addEventListener('unhandledrejection', e=>console.error('rejection', e.reason));
-load().then(render).catch(e=>console.error('init fail', e));
+function init(){ load().then(d=>{ DATA=d; ITEMS=d.items||[]; render(); if(!ITEMS.length) setTimeout(init, 1500); }).catch(e=>{ console.error('init fail', e); setTimeout(init, 2000); }); }
+window.addEventListener('load', init);
 </script>
 </body>
 </html>
