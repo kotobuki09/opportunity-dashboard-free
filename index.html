@@ -228,8 +228,14 @@ function isOpen(i){ return OPENISH(i.status); }
 
 function render(){
   ITEMS = DATA.items || [];
-  $('#genAt').textContent = `${ITEMS.length} cơ hội`;
+  $('#genAt').textContent = ITEMS.length ? `${ITEMS.length} cơ hội` : 'Chưa có dữ liệu';
   $('#navCount').textContent = ITEMS.length;
+  if(!ITEMS.length){
+    ['chWeeks','chCat','chAgents'].forEach(id=>{const el=$(id?'#'+id:'#'+id); if(el) el.innerHTML='<div class="text-xs text-mut p-4">Đang tải hoặc chưa có dữ liệu…</div>';});
+    $('#statCards').innerHTML=''; $('#upcoming').innerHTML='<div class="text-xs text-mut p-3">Chưa có dữ liệu.</div>';
+    $('#agentTbl').innerHTML=''; $('#itemsTbl').innerHTML=''; $('#countChip').textContent='0 / 0 cơ hội';
+    return;
+  }
   $('#fCat').innerHTML = '<option value="">Mọi loại</option>' + Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
   $('#fStatus').innerHTML = Object.entries(STATUSES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
   const agents = [...new Set(ITEMS.map(i=>i.source_agent).filter(Boolean))].sort();
@@ -289,7 +295,7 @@ function renderStats(){
         <span class="text-xs text-mut font-medium">${label}</span>
         <svg class="${cl}" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
       </div>
-      <div class="text-3xl font-extrabold tabular-nums tracking-tight">${val}</div>
+      <div class="text-3xl font-extrabold tabular-nums tracking-tight">${Number(val).toLocaleString('vi-VN')}</div>
     </div>`).join('');
 }
 
@@ -335,7 +341,7 @@ function renderCharts(){
   charts.ag.render();
 
   const up = ITEMS.filter(i=>i.deadline&&isOpen(i)).map(i=>({i,d:days(i.deadline)}))
-    .filter(x=>x.d>=0).sort((a,b)=>(a.d-b.d)||((b.i.score||0)-(a.i.score||0))).slice(0,10);
+    .filter(x=>x.d!==null&&x.d>=0).sort((a,b)=>(a.d-b.d)||((b.i.score||0)-(a.i.score||0))).slice(0,10);
   $('#upcoming').innerHTML = up.length ? up.map(({i,d})=>`
     <a href="${esc(i.url||'#')}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
       <span class="text-lg font-extrabold tabular-nums w-10 text-right ${d<0?'text-red-400':d<=7?'text-orange-400':d<=14?'text-amber-300':'text-mut'}">${d}</span>
@@ -375,11 +381,11 @@ function renderTable(){
     const s=i.score||0, sc=s>=65?'bg-emerald-500/15 text-emerald-400 border-emerald-500/30':s>=45?'bg-amber-500/15 text-amber-400 border-amber-500/30':'bg-zinc-500/15 text-zinc-400 border-zinc-500/30';
     const d=days(i.deadline);
     const dhtml = i.deadline
-      ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${i.deadline}</span> <span class="text-[11px] text-mut">${d}d</span>`
+      ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${i.deadline}</span> <span class="text-[11px] text-mut">${d===null?'':d+'d'}</span>`
       : '<span class="text-mut">—</span>';
     const tags=String(Array.isArray(i.tags)?i.tags.join(','):i.tags||'').split(',').filter(Boolean).slice(0,3);
     return `<tr>
-      <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${s}</span></td>
+      <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${Number.isFinite(+i.score)?+i.score:0}</span></td>
       <td class="px-4 py-3 max-w-[26rem]"><a class="block font-medium truncate hover:text-sky-400" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
       <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
@@ -396,9 +402,11 @@ document.querySelectorAll('#nav .nav-item').forEach(el=>el.addEventListener('cli
   $('#pageTitle').textContent = TITLES[el.dataset.tab];
   window.scrollTo(0,0);
 }));
-['q','fCat','fStatus','fAgent','sort','onlyOpen'].forEach(id=>$('#'+id).addEventListener('input', renderTable));
-$('#qTop').addEventListener('input', e=>{ $('#q').value=e.target.value;
-  document.querySelector('[data-tab="list"]').click(); renderTable(); });
+function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+['q','fCat','fStatus','fAgent','sort'].forEach(id=>$('#'+id).addEventListener('input', debounce(renderTable)));
+$('#onlyOpen').addEventListener('change', renderTable);
+$('#qTop').addEventListener('input', debounce(e=>{ $('#q').value=e.target.value;
+  document.querySelector('[data-tab="list"]').click(); renderTable(); }, 250));
 $('#dlJson').onclick = ()=>dl('data.json', JSON.stringify(DATA,null,2));
 $('#dlCsv').onclick = ()=>{
   const ks=['id','title','org','url','category','score','deadline','status','source_agent'];
