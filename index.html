@@ -56,6 +56,7 @@ tailwind.config = {
       <button type="button" class="nav-item active" data-tab="ov" role="tab" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Tổng quan</button>
       <button type="button" class="nav-item" data-tab="list" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Cơ hội <span class="ml-auto badge-b bg-sky-500/15 text-sky-400 border-sky-500/30" id="navCount">0</span></button>
       <button type="button" class="nav-item" data-tab="agents" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8M9 14h.01M15 14h.01"/></svg>Agent & API</button>
+      <button type="button" class="nav-item" data-tab="plan" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 2v4M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>Lộ trình</button>
       <button type="button" class="nav-item" data-tab="backup" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>Dữ liệu</button>
     </nav>
     <div class="mt-auto space-y-2">
@@ -187,6 +188,23 @@ tailwind.config = {
         </div>
       </section>
 
+      <!-- PLAN (Lộ trình) -->
+      <section id="tab-plan" class="hide space-y-4">
+        <div class="grid md:grid-cols-3 gap-4" id="planStats"></div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="card-s glow p-5">
+            <h3 class="text-sm font-semibold mb-3">Timeline hồ sơ (8 tuần)</h3>
+            <div id="planTimeline"></div>
+          </div>
+          <div class="card-s glow p-5">
+            <h3 class="text-sm font-semibold mb-3">Pipeline của tôi</h3>
+            <div id="pipeline" class="grid grid-cols-3 gap-3"></div>
+            <h3 class="text-sm font-semibold mt-5 mb-3">Cần hành động (điểm cao, chưa nộp, gần hạn)</h3>
+            <div id="actionItems" class="space-y-1"></div>
+          </div>
+        </div>
+      </section>
+
       <!-- BACKUP -->
       <section id="tab-backup" class="hide">
         <div class="card-s glow p-6 max-w-xl">
@@ -273,7 +291,7 @@ req = urllib.request.Request(
     headers={"Authorization": "Bearer " + TOKEN,
              "Content-Type": "application/json"})
 print(urllib.request.urlopen(req).status)  # 200 = OK`;
-  renderStats(); renderCharts(); renderAgents(); renderTable();
+  renderStats(); renderCharts(); renderAgents(); renderPlan(); renderTable();
 }
 
 function renderStats(){
@@ -397,10 +415,60 @@ function renderTable(){
     </tr>`;}).join('');
 }
 
-const TITLES = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', backup:'Dữ liệu'};
+function renderPlan(){
+  // Stats
+  const applying = ITEMS.filter(i=>i.status==='applying').length;
+  const submitted = ITEMS.filter(i=>i.status==='submitted').length;
+  const done = ITEMS.filter(i=>i.status==='done').length;
+  const ps = [
+    ['Đang làm hồ sơ', applying, 'text-amber-400'],
+    ['Đã nộp', submitted, 'text-violet-400'],
+    ['Đã tham gia', done, 'text-emerald-400'],
+  ];
+  $('#planStats').innerHTML = ps.map(([l,v,c])=>`
+    <div class="card-s p-4"><div class="text-xs text-mut font-medium mb-1">${l}</div>
+    <div class="text-3xl font-extrabold tabular-nums ${c}">${v}</div></div>`).join('');
+  // Timeline: nhóm hạn theo tuần 8 tuần tới, chỉ item đang mở
+  const tl = {};
+  ITEMS.forEach(i=>{ if(!isOpen(i)||!i.deadline) return; const d=days(i.deadline); if(d===null||d<0||d>=56) return;
+    const w=Math.floor(d/7); (tl[w]=tl[w]||[]).push(i); });
+  let tlHtml='';
+  for(let w=0;w<8;w++){
+    const list=(tl[w]||[]).sort((a,b)=>(b.score||0)-(a.score||0)).slice(0,4);
+    tlHtml += `<div class="flex gap-3 py-2 border-t border-bd first:border-0">
+      <div class="w-14 shrink-0 text-xs font-bold ${w===0?'text-orange-400':'text-mut'}">${w===0?'Tuần này':'T+'+w}</div>
+      <div class="flex-1 min-w-0">${list.length?list.map(i=>`
+        <a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 py-1 group">
+          <span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span>
+          <span class="text-[13px] truncate group-hover:text-sky-400">${esc(i.title)}</span>
+          <span class="ml-auto text-[11px] text-mut tabular-nums shrink-0">${i.deadline}</span>
+        </a>`).join(''):'<div class="text-xs text-mut py-1">— trống —</div>'}</div></div>`;
+  }
+  $('#planTimeline').innerHTML = tlHtml;
+  // Pipeline
+  const stages = ['interested','applying','submitted','done'];
+  $('#pipeline').innerHTML = stages.map(st=>{
+    const n=ITEMS.filter(i=>i.status===st).length;
+    const pct=ITEMS.length?Math.round(n/ITEMS.length*100):0;
+    return `<div class="card-s p-3"><div class="text-[11px] text-mut mb-1">${STATUSES[st]}</div>
+      <div class="text-2xl font-extrabold tabular-nums">${n}</div>
+      <div class="h-1.5 rounded-full bg-bd mt-2 overflow-hidden"><div class="h-full rounded-full bg-sky-500" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+  // Action items: score>=60, đang mở, hạn <=45 ngày
+  const act = ITEMS.filter(i=>isOpen(i)&&(i.score||0)>=60).map(i=>({i,d:days(i.deadline)}))
+    .filter(x=>x.d!==null&&x.d<=45).sort((a,b)=>(a.d-b.d)).slice(0,10);
+  $('#actionItems').innerHTML = act.length?act.map(({i,d})=>`
+    <a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-pop group">
+      <span class="badge-b bg-emerald-500/15 text-emerald-400 border-emerald-500/30 tabular-nums">${i.score}</span>
+      <span class="flex-1 min-w-0"><span class="block text-[13px] truncate group-hover:text-sky-400">${esc(i.title)}</span></span>
+      <span class="text-xs tabular-nums shrink-0 ${d<=14?'text-orange-400':'text-mut'}">${d}d</span>
+    </a>`).join(''):'<div class="text-xs text-mut p-3">Không có mục nào cần hành động ngay.</div>';
+}
+
+const TITLES = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', plan:'Lộ trình', backup:'Dữ liệu'};
 document.querySelectorAll('#nav .nav-item').forEach(el=>el.addEventListener('click', ()=>{
   document.querySelectorAll('#nav .nav-item').forEach(x=>x.classList.toggle('active', x===el));
-  ['ov','list','agents','backup'].forEach(t=>$('#tab-'+t).classList.toggle('hide', t!==el.dataset.tab));
+  ['ov','list','agents','plan','backup'].forEach(t=>$('#tab-'+t).classList.toggle('hide', t!==el.dataset.tab));
   $('#pageTitle').textContent = TITLES[el.dataset.tab];
   window.scrollTo(0,0);
 }));
