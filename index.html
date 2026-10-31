@@ -52,11 +52,11 @@ tailwind.config = {
       </div>
     </div>
     <div class="text-[11px] uppercase tracking-wider text-mut font-semibold px-3 mb-1.5">Menu</div>
-    <nav class="space-y-1" id="nav">
-      <div class="nav-item active" data-tab="ov"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Tổng quan</div>
-      <div class="nav-item" data-tab="list"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Cơ hội <span class="ml-auto badge-b bg-sky-500/15 text-sky-400 border-sky-500/30" id="navCount">0</span></div>
-      <div class="nav-item" data-tab="agents"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8M9 14h.01M15 14h.01"/></svg>Agent & API</div>
-      <div class="nav-item" data-tab="backup"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>Dữ liệu</div>
+    <nav class="space-y-1" id="nav" role="tablist">
+      <button type="button" class="nav-item active" data-tab="ov" role="tab" aria-selected="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Tổng quan</button>
+      <button type="button" class="nav-item" data-tab="list" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Cơ hội <span class="ml-auto badge-b bg-sky-500/15 text-sky-400 border-sky-500/30" id="navCount">0</span></button>
+      <button type="button" class="nav-item" data-tab="agents" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8M9 14h.01M15 14h.01"/></svg>Agent & API</button>
+      <button type="button" class="nav-item" data-tab="backup" role="tab" aria-selected="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>Dữ liệu</button>
     </nav>
     <div class="mt-auto space-y-2">
       <div class="card-s p-3 text-xs text-mut">
@@ -77,8 +77,8 @@ tailwind.config = {
         <h1 class="text-[15px] font-semibold" id="pageTitle">Tổng quan</h1>
         <div class="ml-auto flex items-center gap-3">
           <div class="relative hidden md:block">
-            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-mut" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input id="qTop" class="inp pl-8 w-64" placeholder="Tìm cơ hội…">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-mut" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="qTop" class="inp pl-8 w-64" placeholder="Tìm cơ hội…" aria-label="Tìm cơ hội">
           </div>
           <span class="badge-b bg-emerald-500/15 text-emerald-400 border-emerald-500/30" id="genAt">…</span>
         </div>
@@ -94,7 +94,7 @@ tailwind.config = {
             <h3 class="text-sm font-semibold">Nhịp deadline</h3>
             <span class="text-xs text-mut">18 tuần tới</span>
           </div>
-          <div id="chWeeks"></div>
+          <div id="chWeeks" role="img" aria-label="Biểu đồ số cơ hội theo tuần deadline"></div>
         </div>
         <div class="grid lg:grid-cols-5 gap-4">
           <div class="card-s p-5 lg:col-span-2">
@@ -104,8 +104,8 @@ tailwind.config = {
           <div class="card-s p-5 lg:col-span-3">
             <h3 class="text-sm font-semibold mb-2">Phân bố</h3>
             <div class="grid md:grid-cols-2 gap-4">
-              <div id="chCat" class="min-w-0"></div>
-              <div id="chAgents" class="min-w-0"></div>
+              <div id="chCat" class="min-w-0" role="img" aria-label="Biểu đồ tròn phân bố theo loại"></div>
+              <div id="chAgents" class="min-w-0" role="img" aria-label="Biểu đồ cột số mục theo agent"></div>
             </div>
           </div>
         </div>
@@ -115,11 +115,11 @@ tailwind.config = {
       <section id="tab-list" class="hide">
         <div class="card-s glow">
           <div class="p-3 flex flex-wrap gap-2 items-center border-b border-bd">
-            <input id="q" class="inp w-full sm:w-72" placeholder="Tìm tiêu đề, tổ chức, tag…">
-            <select id="fCat" class="inp"></select>
-            <select id="fStatus" class="inp"></select>
-            <select id="fAgent" class="inp"></select>
-            <select id="sort" class="inp">
+            <input id="q" class="inp w-full sm:w-72" placeholder="Tìm tiêu đề, tổ chức, tag…" aria-label="Tìm tiêu đề, tổ chức, tag">
+            <select id="fCat" class="inp" aria-label="Lọc theo loại"></select>
+            <select id="fStatus" class="inp" aria-label="Lọc theo trạng thái"></select>
+            <select id="fAgent" class="inp" aria-label="Lọc theo agent"></select>
+            <select id="sort" class="inp" aria-label="Sắp xếp">
               <option value="score">Sắp: Điểm ↓</option>
               <option value="deadline">Sắp: Deadline ↑</option>
               <option value="new">Sắp: Mới nhất</option>
@@ -206,15 +206,16 @@ tailwind.config = {
 <script>
 const CATS = {scholarship:'Học bổng',research:'Research visit',grant:'Grant',startup:'Startup',gig:'Kiếm tiền',bounty:'Bounty',other:'Khác'};
 const CATCOLORS = {scholarship:'#38bdf8',research:'#a78bfa',grant:'#34d399',startup:'#fbbf24',gig:'#60a5fa',bounty:'#f87171',other:'#9ca3af'};
-const STATUSES = {'':'Mọi trạng thái',new:'Mới',interested:'Quan tâm',applying:'Đang hồ sơ',submitted:'Đã nộp',done:'Đã tham gia',skip:'Bỏ qua'};
-const SBADGE = {new:'bg-sky-500/15 text-sky-400 border-sky-500/30',interested:'bg-blue-500/15 text-blue-400 border-blue-500/30',applying:'bg-amber-500/15 text-amber-400 border-amber-500/30',submitted:'bg-violet-500/15 text-violet-400 border-violet-500/30',done:'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',skip:'bg-zinc-500/15 text-zinc-400 border-zinc-500/30'};
+const STATUSES = {'':'Mọi trạng thái',open:'Đang mở',new:'Mới',interested:'Quan tâm',applying:'Đang hồ sơ',submitted:'Đã nộp',done:'Đã tham gia',skip:'Bỏ qua'};
+const SBADGE = {open:'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',new:'bg-sky-500/15 text-sky-400 border-sky-500/30',interested:'bg-blue-500/15 text-blue-400 border-blue-500/30',applying:'bg-amber-500/15 text-amber-400 border-amber-500/30',submitted:'bg-violet-500/15 text-violet-400 border-violet-500/30',done:'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',skip:'bg-zinc-500/15 text-zinc-400 border-zinc-500/30'};
 const OPENISH = s => !s || ['open','new','interested','applying'].includes(s);
 let DATA={items:[]}, ITEMS=[], charts={};
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const days = d => d ? Math.ceil((new Date(d) - Date.now())/864e5) : null;
-const dl = (name, text, type='application/json') => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); };
+const days = d => { if(!d) return null; const t = new Date(String(d).length===10 ? d+'T00:00:00' : d); return isNaN(t) ? null : Math.ceil((t - Date.now())/864e5); };
+const safeUrl = u => /^https?:\/\//i.test(String(u||'')) ? String(u) : '#';
+const dl = (name, text, type='application/json') => { const a=document.createElement('a'); const u=URL.createObjectURL(new Blob([text],{type})); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u), 5000); };
 
 async function load(){
   for(let a=0;a<3;a++){
@@ -343,7 +344,7 @@ function renderCharts(){
   const up = ITEMS.filter(i=>i.deadline&&isOpen(i)).map(i=>({i,d:days(i.deadline)}))
     .filter(x=>x.d!==null&&x.d>=0).sort((a,b)=>(a.d-b.d)||((b.i.score||0)-(a.i.score||0))).slice(0,10);
   $('#upcoming').innerHTML = up.length ? up.map(({i,d})=>`
-    <a href="${esc(i.url||'#')}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
+    <a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
       <span class="text-lg font-extrabold tabular-nums w-10 text-right ${d<0?'text-red-400':d<=7?'text-orange-400':d<=14?'text-amber-300':'text-mut'}">${d}</span>
       <span class="w-px self-stretch bg-bd"></span>
       <span class="flex-1 min-w-0">
@@ -372,10 +373,11 @@ function renderTable(){
     if(fa && (i.source_agent||'')!==fa) return false;
     if(onlyOpen && !OPENISH(i.status)) return false;
     return true;});
-  const cmp = {score:(a,b)=>(b.score||0)-(a.score||0),
-    deadline:(a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'),
+  const cmp = {score:(a,b)=>(Number(b.score)||0)-(Number(a.score)||0),
+    deadline:(a,b)=>(a.deadline&&days(a.deadline)!==null?a.deadline:'9999').localeCompare(b.deadline&&days(b.deadline)!==null?b.deadline:'9999'),
     new:(a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))};
-  rows.sort(cmp[sort]);
+  rows.forEach((r,ix)=>r.__ix=ix);
+  rows.sort((a,b)=>(cmp[sort](a,b))||(a.__ix-b.__ix));
   $('#countChip').textContent = `${rows.length} / ${ITEMS.length} cơ hội`;
   $('#itemsTbl').innerHTML = rows.slice(0,400).map(i=>{
     const s=Number(i.score)||0, sc=s>=65?'bg-emerald-500/15 text-emerald-400 border-emerald-500/30':s>=45?'bg-amber-500/15 text-amber-400 border-amber-500/30':'bg-zinc-500/15 text-zinc-400 border-zinc-500/30';
@@ -383,15 +385,15 @@ function renderTable(){
     const dhtml = i.deadline
       ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${esc(i.deadline)}</span> <span class="text-[11px] text-mut">${d===null?'':d+'d'}</span>`
       : '<span class="text-mut">—</span>';
-    const tags=String(Array.isArray(i.tags)?i.tags.join(','):i.tags||'').split(',').filter(Boolean).slice(0,3);
+    const tags=(Array.isArray(i.tags)?i.tags:[]).slice(0,3);
     return `<tr>
       <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${esc(String(Number.isFinite(s)?s:0))}</span></td>
-      <td class="px-4 py-3 max-w-[26rem]"><a class="block font-medium truncate hover:text-sky-400" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
+      <td class="px-4 py-3"><a class="block font-medium truncate hover:text-sky-400" href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
       <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
       <td class="px-4 py-3 text-xs whitespace-nowrap">${dhtml}</td>
       <td class="px-4 py-3"><span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span></td>
-      <td class="px-4 py-3 hidden lg:table-cell">${tags.map(t=>`<span class="text-[11px] text-mut border border-bd rounded-full px-2 py-0.5 mr-1">${esc(t)}</span>`).join('')}</td>
+      <td class="px-4 py-3 hidden lg:table-cell">${(Array.isArray(i.tags)?i.tags.slice(0,3):[]).map(t=>`<span class="text-[11px] text-mut border border-bd rounded-full px-2 py-0.5 mr-1">${esc(t)}</span>`).join('')}</td>
     </tr>`;}).join('');
 }
 
@@ -410,9 +412,10 @@ $('#qTop').addEventListener('input', debounce(e=>{ $('#q').value=e.target.value;
 $('#dlJson').onclick = ()=>dl('data.json', JSON.stringify(DATA,null,2));
 $('#dlCsv').onclick = ()=>{
   const ks=['id','title','org','url','category','score','deadline','status','source_agent'];
-  const csv=[ks.join(',')].concat(ITEMS.map(i=>ks.map(k=>'"'+String(i[k]??'').replace(/"/g,'""')+'"').join(','))).join('\n');
+  const guard = v => { v=String(v??''); return /^[=+\-@]/.test(v) ? "'"+v : v; };
+  const csv='\uFEFF'+[ks.join(',')].concat(ITEMS.map(i=>ks.map(k=>'"'+guard(i[k]).replace(/"/g,'""')+'"').join(','))).join('\n');
   dl('opportunities.csv', csv, 'text/csv');};
-$('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
+$('#copySnip').onclick = async ()=>{ try{ await navigator.clipboard.writeText($('#snip').textContent); $('#copySnip').textContent='✓ Đã copy'; setTimeout(()=>$('#copySnip').textContent='Copy script', 1500); }catch(e){ $('#copySnip').textContent='Chọn tay & Ctrl+C'; setTimeout(()=>$('#copySnip').textContent='Copy script', 2500); } };
 
 let __loaded=false;
 function init(){ load().then(d=>{ DATA=d; render(); __loaded=true; }).catch(()=>{ if(!__loaded) setTimeout(init,2000); }); }
