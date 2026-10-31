@@ -153,7 +153,13 @@ const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','
 const days = d => d ? Math.ceil((new Date(d) - Date.now())/864e5) : null;
 const dl = (name, text, type='application/json') => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); };
 
-function load(){ return fetch('data.json?ts='+Date.now()).then(r=>r.json()); }
+async function load(){
+  for(let a=0;a<3;a++){
+    try{ const r=await fetch('data.json?ts='+Date.now()); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }
+    catch(e){ console.error('load fail', e); await new Promise(rs=>setTimeout(rs,800)); }
+  }
+  return {items:[], generatedAt:''};
+}
 
 function render(){
   ITEMS = DATA.items || [];
