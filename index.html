@@ -378,14 +378,14 @@ function renderTable(){
   rows.sort(cmp[sort]);
   $('#countChip').textContent = `${rows.length} / ${ITEMS.length} cơ hội`;
   $('#itemsTbl').innerHTML = rows.slice(0,400).map(i=>{
-    const s=i.score||0, sc=s>=65?'bg-emerald-500/15 text-emerald-400 border-emerald-500/30':s>=45?'bg-amber-500/15 text-amber-400 border-amber-500/30':'bg-zinc-500/15 text-zinc-400 border-zinc-500/30';
+    const s=Number(i.score)||0, sc=s>=65?'bg-emerald-500/15 text-emerald-400 border-emerald-500/30':s>=45?'bg-amber-500/15 text-amber-400 border-amber-500/30':'bg-zinc-500/15 text-zinc-400 border-zinc-500/30';
     const d=days(i.deadline);
     const dhtml = i.deadline
-      ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${i.deadline}</span> <span class="text-[11px] text-mut">${d===null?'':d+'d'}</span>`
+      ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${esc(i.deadline)}</span> <span class="text-[11px] text-mut">${d===null?'':d+'d'}</span>`
       : '<span class="text-mut">—</span>';
     const tags=String(Array.isArray(i.tags)?i.tags.join(','):i.tags||'').split(',').filter(Boolean).slice(0,3);
     return `<tr>
-      <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${Number.isFinite(+i.score)?+i.score:0}</span></td>
+      <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${esc(String(Number.isFinite(s)?s:0))}</span></td>
       <td class="px-4 py-3 max-w-[26rem]"><a class="block font-medium truncate hover:text-sky-400" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
       <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
@@ -414,7 +414,8 @@ $('#dlCsv').onclick = ()=>{
   dl('opportunities.csv', csv, 'text/csv');};
 $('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
 
-function init(){ load().then(d=>{ DATA=d; render(); if(!(d.items||[]).length) setTimeout(init,1500); }).catch(()=>setTimeout(init,2000)); }
+let __loaded=false;
+function init(){ load().then(d=>{ DATA=d; render(); __loaded=true; }).catch(()=>{ if(!__loaded) setTimeout(init,2000); }); }
 window.addEventListener('load', init);
 </script>
 </body>
