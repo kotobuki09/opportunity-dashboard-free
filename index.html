@@ -456,7 +456,7 @@ function renderPlan(){
   }).join('');
   // Action items: score>=60, đang mở, hạn <=45 ngày
   const act = ITEMS.filter(i=>isOpen(i)&&(i.score||0)>=60).map(i=>({i,d:days(i.deadline)}))
-    .filter(x=>x.d!==null&&x.d<=45).sort((a,b)=>(a.d-b.d)).slice(0,10);
+    .filter(x=>x.d!==null&&x.d>=0&&x.d<=45).sort((a,b)=>(a.d-b.d)).slice(0,10);
   $('#actionItems').innerHTML = act.length?act.map(({i,d})=>`
     <a href="${esc(safeUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-pop group">
       <span class="badge-b bg-emerald-500/15 text-emerald-400 border-emerald-500/30 tabular-nums">${i.score}</span>
