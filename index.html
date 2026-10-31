@@ -423,9 +423,10 @@ function renderTable(){
       ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${esc(i.deadline)}</span> <span class="text-[11px] text-mut">${d===null?'':d+'d'}</span>`
       : '<span class="text-mut">—</span>';
     const tags=(Array.isArray(i.tags)?i.tags:[]).slice(0,3);
+    const isNewTag = (()=>{ try{ const seen=JSON.parse(localStorage.getItem('oppscan_seen')||'{}'); const key=i.id+'|'+(i.deadline||''); return !seen[key]; }catch(e){return false} })();
     return `<tr>
       <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${esc(String(Number.isFinite(s)?s:0))}</span></td>
-      <td class="px-4 py-3"><a class="block font-medium truncate hover:text-sky-400 cursor-pointer" onclick="openDetail('${esc(i.id)}')" data-url="${esc(safeUrl(i.url))}">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
+      <td class="px-4 py-3"><a class="block font-medium truncate hover:text-sky-400 cursor-pointer" onclick="openDetail('${esc(i.id)}')" data-url="${esc(safeUrl(i.url))}">${isNewTag?'<span class="inline-block w-1.5 h-1.5 rounded-full bg-sky-400 mr-1.5 align-middle" title="Mới với bạn"></span>':''}${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
       <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
       <td class="px-4 py-3 text-xs whitespace-nowrap">${dhtml}</td>
@@ -492,6 +493,7 @@ const effStatus=i=>getOverrides()[i.id]||i.status||'new';
 
 function openDetail(id){
   const i=ITEMS.find(x=>x.id===id); if(!i) return;
+  try{ const seen=JSON.parse(localStorage.getItem('oppscan_seen')||'{}'); seen[i.id+'|'+(i.deadline||'')]=1; localStorage.setItem('oppscan_seen',JSON.stringify(seen)); }catch(e){}
   const d=days(i.deadline);
   const st=effStatus(i);
   const rows=[['Loại',CATS[i.category]||i.category||'—'],['Agent gửi',i.source_agent||'—'],['Deadline',i.deadline?`${i.deadline} (${d===null?'?':d+' ngày'})`:'—'],['Điểm',String(i.score||0)],['Trạng thái',''],['Ghi chú',i.notes||'—']];
@@ -524,16 +526,31 @@ function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTim
 $('#onlyOpen').addEventListener('change', renderTable);
 $('#qTop').addEventListener('input', debounce(e=>{ $('#q').value=e.target.value;
   document.querySelector('[data-tab="list"]').click(); renderTable(); }, 250));
-$('#dlJson').onclick = ()=>dl('data.json', JSON.stringify(DATA,null,2));
+$('#dlJson').onclick = ()=>{ const merged = JSON.parse(JSON.stringify(DATA)); const pend=localMerges(); const ids=new Set((merged.items||[]).map(i=>i.id)); pend.forEach(p=>{ if(!ids.has(p.id)) merged.items.push(p); }); merged.count=merged.items.length; dl('data.json', JSON.stringify(merged,null,2)); };
 $('#dlCsv').onclick = ()=>{
   const ks=['id','title','org','url','category','score','deadline','status','source_agent'];
   const guard = v => { v=String(v??''); return /^[=+\-@]/.test(v) ? "'"+v : v; };
   const csv='\uFEFF'+[ks.join(',')].concat(ITEMS.map(i=>ks.map(k=>'"'+guard(i[k]).replace(/"/g,'""')+'"').join(','))).join('\n');
   dl('opportunities.csv', csv, 'text/csv');};
+// quick add merge
+function localMerges(){ try{ return JSON.parse(localStorage.getItem('oppscan_pending')||'[]'); }catch(e){ return []; } }
+$('#quickAddBtn').onclick = ()=>{
+  try{
+    let arr = JSON.parse($('#quickAdd').value);
+    if(!Array.isArray(arr)) arr=[arr];
+    const pend = localMerges(); const ids = new Set(ITEMS.map(i=>i.id).concat(pend.map(i=>i.id)));
+    let n=0; arr.forEach(it=>{ if(it && it.id && it.title && !ids.has(it.id)){ pend.push(it); ids.add(it.id); n++; } });
+    localStorage.setItem('oppscan_pending', JSON.stringify(pend));
+    $('#quickAddMsg').textContent = n ? `✓ Đã thêm ${n} mục vào bản xem trước.` : 'Không có mục mới (trùng id hoặc thiếu id/title).';
+    $('#quickAdd').value='';
+    applyLocalMerges(); renderPlan(); renderTable();
+  }catch(e){ $('#quickAddMsg').textContent = 'JSON lỗi: '+e.message; }
+};
+function applyLocalMerges(){ const pend=localMerges(); const ids=new Set(ITEMS.map(i=>i.id)); pend.forEach(p=>{ if(!ids.has(p.id)){ ITEMS.push(p); ids.add(p.id);} }); }
 $('#copySnip').onclick = async ()=>{ try{ await navigator.clipboard.writeText($('#snip').textContent); $('#copySnip').textContent='✓ Đã copy'; setTimeout(()=>$('#copySnip').textContent='Copy script', 1500); }catch(e){ $('#copySnip').textContent='Chọn tay & Ctrl+C'; setTimeout(()=>$('#copySnip').textContent='Copy script', 2500); } };
 
 let __loaded=false;
-function init(){ load().then(d=>{ DATA=d; render(); __loaded=true; }).catch(()=>{ if(!__loaded) setTimeout(init,2000); }); }
+function init(){ load().then(d=>{ DATA=d; render(); applyLocalMerges(); renderPlan(); renderTable(); __loaded=true; }).catch(()=>{ if(!__loaded) setTimeout(init,2000); }); }
 window.addEventListener('load', init);
 </script>
 </body>
