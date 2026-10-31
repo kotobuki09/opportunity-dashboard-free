@@ -238,7 +238,8 @@ function renderCharts(){
   const ag={}; ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; ag[a]=(ag[a]||0)+1;});
   const ak=Object.keys(ag).sort((a,b)=>ag[b]-ag[a]).slice(0,8);
   charts.ag = new Chart($('#chAgents'), {type:'bar', data:{labels:ak, datasets:[{data:ak.map(k=>ag[k]), backgroundColor:'rgba(124,58,237,.6)', borderRadius:4}]}, options:{indexAxis:'y', plugins:{legend:{display:false}}}});
-  const up = ITEMS.filter(i=>i.deadline&&(i.status||'open')==='open'&&days(i.deadline)>=-1).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,15);
+  const isOpen = i => !i.status || ['open','new','interested','applying'].includes(i.status);
+  const up = ITEMS.filter(i=>i.deadline&&isOpen(i)&&days(i.deadline)>=-1).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,15);
   $('#upcoming').innerHTML = up.map(i=>{const d=days(i.deadline);
     return `<div class="ddl-row"><span class="ddl-days ${d<=7?'text-danger':d<=14?'text-warning':'text-secondary'}">${d}</span>
       <div style="flex:1;min-width:0"><a class="row-link d-block text-truncate" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a>
