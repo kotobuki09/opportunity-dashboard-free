@@ -1,152 +1,215 @@
 <!DOCTYPE html>
-<html lang="vi" data-bs-theme="dark">
+<html lang="vi" class="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Opportunity Intelligence</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.1.1/dist/css/tabler.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.34.1/dist/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.1.1/dist/js/tabler.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+<title>OppScan · Opportunity Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: {
+    colors: {
+      bg: 'hsl(240 10% 3.9%)', card: 'hsl(240 10% 5.5%)', pop: 'hsl(240 10% 8%)',
+      bd: 'hsl(240 3.7% 15.9%)', fg: 'hsl(0 0% 98%)', mut: 'hsl(240 5% 64.9%)',
+      acc: 'hsl(217 91% 60%)',
+    },
+    fontFamily: { sans: ['Inter','system-ui','sans-serif'] },
+  }}
+}
+</script>
 <style>
-  .brand-gradient { background: linear-gradient(45deg,#06bfd4,#7c3aed); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight:700; }
-  .stat-card { cursor: default; transition: transform .15s; }
-  .stat-card:hover { transform: translateY(-2px); }
-  .score-pill { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .deadline-past { text-decoration: line-through; color: var(--tblr-danger) !important; }
-  .deadline-soon { color: var(--tblr-warning) !important; font-weight: 600; }
-  .chart-box { position: relative; height: 240px; }
-  .ddl-row { display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem; border-radius:.5rem; }
-  .ddl-row:hover { background: var(--tblr-bg-surface-secondary); }
-  .ddl-days { font-size:1.4rem; font-weight:800; font-variant-numeric: tabular-nums; min-width:3.2rem; text-align:right; }
-  .hide { display:none !important; }
-  .row-link { color: inherit; text-decoration: none; }
-  .row-link:hover { color: var(--tblr-primary); }
-  .tag-chip { background: var(--tblr-active-bg); border:1px solid var(--tblr-border-color); border-radius:2rem; padding:.05rem .5rem; font-size:.72rem; }
-  pre.api-code { background:#111927; border-radius:.5rem; padding:1rem; font-size:.78rem; overflow-x:auto; color:#a5d6ff; }
+  ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:hsl(240 3.7% 18%);border-radius:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  .card-s { background: hsl(240 10% 5.5%); border:1px solid hsl(240 3.7% 15.9%); border-radius:.75rem; }
+  .nav-item { display:flex; align-items:center; gap:.65rem; padding:.5rem .7rem; border-radius:.5rem; color:hsl(240 5% 64.9%); font-size:.875rem; font-weight:500; transition:.15s; cursor:pointer; }
+  .nav-item:hover { color:hsl(0 0% 98%); background:hsl(240 3.7% 10%); }
+  .nav-item.active { color:hsl(0 0% 98%); background:hsl(240 3.7% 12%); }
+  .badge-b { display:inline-flex; align-items:center; border-radius:9999px; padding:.1rem .55rem; font-size:.7rem; font-weight:600; border:1px solid transparent; white-space:nowrap; }
+  .inp { background:hsl(240 10% 7%); border:1px solid hsl(240 3.7% 15.9%); border-radius:.5rem; padding:.45rem .75rem; font-size:.85rem; color:hsl(0 0% 98%); outline:none; }
+  .inp:focus { border-color:hsl(217 91% 60%); box-shadow:0 0 0 2px hsl(217 91% 60%/.25); }
+  tbody tr { border-top:1px solid hsl(240 3.7% 12%); transition:background .1s; }
+  tbody tr:hover { background:hsl(240 3.7% 8%); }
+  .apexcharts-tooltip { background:hsl(240 10% 7%)!important; border:1px solid hsl(240 3.7% 15.9%)!important; color:hsl(0 0% 98%)!important; }
+  .hide{display:none!important}
+  a{color:inherit}
+  .glow { box-shadow: 0 8px 30px rgba(0,0,0,.35); }
 </style>
 </head>
-<body>
-<div class="page">
+<body class="bg-bg text-fg font-sans antialiased">
+<div class="flex min-h-screen">
+
   <!-- SIDEBAR -->
-  <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
-    <div class="container-fluid">
-      <h1 class="navbar-brand mb-0 h1"><i class="ti ti-sparkles text-cyan me-1"></i><span class="brand-gradient">OppScan</span></h1>
-      <div class="navbar-nav flex-row d-lg-none"><button class="nav-link" data-bs-toggle="collapse" data-bs-target="#smenu"><i class="ti ti-menu-2"></i></button></div>
-      <div class="collapse navbar-collapse" id="smenu">
-        <ul class="navbar-nav pt-lg-3">
-          <li class="nav-item"><a class="nav-link active" data-tab="ov" href="#"><i class="ti ti-chart-dots me-1"></i> Tổng quan</a></li>
-          <li class="nav-item"><a class="nav-link" data-tab="list" href="#"><i class="ti ti-list-details me-1"></i> Cơ hội <span class="badge bg-cyan-lt ms-1" id="navCount"></span></a></li>
-          <li class="nav-item"><a class="nav-link" data-tab="agents" href="#"><i class="ti ti-robots me-1"></i> Agent & API</a></li>
-          <li class="nav-item"><a class="nav-link" data-tab="backup" href="#"><i class="ti ti-database-export me-1"></i> Backup</a></li>
-          <li class="nav-item mt-3 px-3"><a class="btn btn-github w-100" href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank"><i class="ti ti-brand-github me-1"></i> Repo</a></li>
-        </ul>
+  <aside class="hidden lg:flex flex-col w-60 shrink-0 border-r border-bd sticky top-0 h-screen p-4">
+    <div class="flex items-center gap-2.5 px-2 h-12 mb-4">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-400 to-violet-500 flex items-center justify-center font-extrabold text-sm text-white">O</div>
+      <div>
+        <div class="font-bold text-[15px] leading-none">OppScan</div>
+        <div class="text-[11px] text-mut mt-0.5">Opportunity Intelligence</div>
       </div>
+    </div>
+    <div class="text-[11px] uppercase tracking-wider text-mut font-semibold px-3 mb-1.5">Menu</div>
+    <nav class="space-y-1" id="nav">
+      <div class="nav-item active" data-tab="ov"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Tổng quan</div>
+      <div class="nav-item" data-tab="list"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Cơ hội <span class="ml-auto badge-b bg-sky-500/15 text-sky-400 border-sky-500/30" id="navCount">0</span></div>
+      <div class="nav-item" data-tab="agents"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8M9 14h.01M15 14h.01"/></svg>Agent & API</div>
+      <div class="nav-item" data-tab="backup"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg>Dữ liệu</div>
+    </nav>
+    <div class="mt-auto space-y-2">
+      <div class="card-s p-3 text-xs text-mut">
+        <div class="flex items-center gap-1.5 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span><span class="text-emerald-400 font-semibold">Hoạt động 24/7</span></div>
+        <div>GitHub Pages · 0đ vĩnh viễn</div>
+      </div>
+      <a href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank" class="nav-item justify-center border border-bd bg-card hover:bg-pop">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.34.95.1-.74.4-1.25.72-1.53-2.55-.29-5.23-1.28-5.23-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.35.77 1.05.77 2.12v3.14c0 .3.21.67.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>Repository
+      </a>
     </div>
   </aside>
 
-  <div class="page-wrapper">
-    <!-- HEADER -->
-    <header style="position:sticky;top:0;z-index:100;backdrop-filter:blur(8px);" class="navbar navbar-expand-md d-none d-lg-flex d-print-none">
-      <div class="container-xl">
-        <h2 class="page-title mb-0" id="pageTitle">Tổng quan</h2>
-        <div class="navbar-nav flex-row order-md-last align-items-center ms-auto">
-          <span class="badge bg-green-lt me-2"><i class="ti ti-bolt me-1"></i>Free 24/7</span>
-          <span class="text-secondary" id="genAt"></span>
+  <!-- MAIN -->
+  <div class="flex-1 min-w-0">
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-bg/80 border-b border-bd">
+      <div class="flex items-center gap-3 px-4 md:px-6 h-14">
+        <div class="lg:hidden font-bold">OppScan</div>
+        <h1 class="text-[15px] font-semibold" id="pageTitle">Tổng quan</h1>
+        <div class="ml-auto flex items-center gap-3">
+          <div class="relative hidden md:block">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-mut" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input id="qTop" class="inp pl-8 w-64" placeholder="Tìm cơ hội…">
+          </div>
+          <span class="badge-b bg-emerald-500/15 text-emerald-400 border-emerald-500/30" id="genAt">…</span>
         </div>
       </div>
     </header>
 
-    <div class="page-body container-xl">
+    <main class="p-4 md:p-6 max-w-[1400px]">
       <!-- OVERVIEW -->
-      <div id="tab-ov">
-        <div class="row row-deck row-cards mb-3" id="statCards"></div>
-        <div class="row row-deck row-cards">
-          <div class="col-12"><div class="card"><div class="card-body"><div class="subheader mb-2">Deadline 18 tuần tới</div><div class="chart-box"><canvas id="chWeeks"></canvas></div></div></div></div>
-          <div class="col-lg-6"><div class="card h-full"><div class="card-body"><div class="subheader mb-2">Hạn sắp đến</div><div id="upcoming" style="max-height:300px;overflow:auto"></div></div></div></div>
-          <div class="col-lg-6"><div class="card h-full"><div class="card-body"><div class="subheader mb-2">Phân bố</div><div class="row"><div class="col-6"><canvas id="chCat" height="200"></canvas></div><div class="col-6"><canvas id="chAgents" height="200"></canvas></div></div></div></div></div>
+      <section id="tab-ov">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-4" id="statCards"></div>
+        <div class="card-s glow p-5 mb-4">
+          <div class="flex items-baseline justify-between mb-1">
+            <h3 class="text-sm font-semibold">Nhịp deadline</h3>
+            <span class="text-xs text-mut">18 tuần tới</span>
+          </div>
+          <div id="chWeeks"></div>
         </div>
-      </div>
-
-      <!-- LIST -->
-      <div id="tab-list" class="hide">
-        <div class="card">
-          <div class="card-header">
-            <div class="row g-2 w-100 align-items-center">
-              <div class="col-lg-4"><div class="input-icon"><span class="input-icon-addon"><i class="ti ti-search"></i></span><input id="q" class="form-control" placeholder="Tìm tiêu đề, tổ chức, tag…"></div></div>
-              <div class="col-lg-2"><select id="fCat" class="form-select"></select></div>
-              <div class="col-lg-2"><select id="fStatus" class="form-select"><option value="">Mọi trạng thái</option></select></div>
-              <div class="col-lg-2"><select id="fAgent" class="form-select"></select></div>
-              <div class="col-lg-2"><select id="sort" class="form-select"><option value="score">Điểm ↓</option><option value="deadline">Deadline ↑</option><option value="new">Mới nhất</option></select></div>
+        <div class="grid lg:grid-cols-5 gap-4">
+          <div class="card-s p-5 lg:col-span-2">
+            <h3 class="text-sm font-semibold mb-3">Ưu tiên xử lý ngay</h3>
+            <div id="upcoming" class="space-y-1"></div>
+          </div>
+          <div class="card-s p-5 lg:col-span-3">
+            <h3 class="text-sm font-semibold mb-2">Phân bố</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div id="chCat"></div>
+              <div id="chAgents"></div>
             </div>
           </div>
-          <div class="card-body py-2 d-flex justify-content-between align-items-center">
-            <span class="badge bg-secondary-lt" id="countChip"></span>
-            <label class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="onlyOpen" checked><span class="form-check-label">Chỉ đang mở</span></label>
+        </div>
+      </section>
+
+      <!-- LIST -->
+      <section id="tab-list" class="hide">
+        <div class="card-s glow">
+          <div class="p-3 flex flex-wrap gap-2 items-center border-b border-bd">
+            <input id="q" class="inp w-full sm:w-72" placeholder="Tìm tiêu đề, tổ chức, tag…">
+            <select id="fCat" class="inp"></select>
+            <select id="fStatus" class="inp"></select>
+            <select id="fAgent" class="inp"></select>
+            <select id="sort" class="inp">
+              <option value="score">Sắp: Điểm ↓</option>
+              <option value="deadline">Sắp: Deadline ↑</option>
+              <option value="new">Sắp: Mới nhất</option>
+            </select>
+            <label class="ml-auto flex items-center gap-2 text-xs text-mut cursor-pointer select-none">
+              <input type="checkbox" id="onlyOpen" checked class="accent-sky-500"> Chỉ đang mở
+            </label>
           </div>
-          <div class="table-responsive">
-            <table class="table table-vcenter card-table">
-              <thead><tr><th>Điểm</th><th>Tiêu đề</th><th>Loại</th><th>Agent</th><th>Deadline</th><th>Trạng thái</th><th>Tags</th></tr></thead>
+          <div class="px-4 py-2 text-xs text-mut flex justify-between border-b border-bd">
+            <span id="countChip"></span><span class="hidden sm:block">Tối đa 400 dòng — dùng bộ lọc để thu hẹp</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-left text-xs text-mut uppercase tracking-wide">
+                  <th class="px-4 py-2.5 font-semibold">Điểm</th>
+                  <th class="px-4 py-2.5 font-semibold">Cơ hội</th>
+                  <th class="px-4 py-2.5 font-semibold">Loại</th>
+                  <th class="px-4 py-2.5 font-semibold hidden md:table-cell">Agent</th>
+                  <th class="px-4 py-2.5 font-semibold">Deadline</th>
+                  <th class="px-4 py-2.5 font-semibold">Trạng thái</th>
+                  <th class="px-4 py-2.5 font-semibold hidden lg:table-cell">Tags</th>
+                </tr>
+              </thead>
               <tbody id="itemsTbl"></tbody>
             </table>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- AGENTS -->
-      <div id="tab-agents" class="hide">
-        <div class="row row-cards">
-          <div class="col-12"><div class="card"><div class="card-body">
-            <div class="subheader mb-3">Agent đang kết nối</div>
-            <div class="table-responsive"><table class="table table-vcenter"><thead><tr><th>Agent</th><th>Số mục</th><th>Đã nộp</th><th>Hoạt động cuối</th></tr></thead><tbody id="agentTbl"></tbody></table></div>
-          </div></div></div>
-          <div class="col-lg-6"><div class="card"><div class="card-body">
-            <div class="subheader mb-2">Cách gửi từ agent (mẫu — thay TOKEN)</div>
-            <pre class="api-code" id="snip"></pre>
-            <button class="btn btn-primary btn-sm" id="copySnip"><i class="ti ti-copy me-1"></i>Copy script</button>
-          </div></div></div>
-          <div class="col-lg-6"><div class="card"><div class="card-body">
-            <div class="subheader mb-2">Định dạng một mục dữ liệu</div>
-            <pre class="api-code">{
-  "id": "chuoi-ky-tu-khong-dau",
+      <section id="tab-agents" class="hide space-y-4">
+        <div class="card-s glow p-5">
+          <h3 class="text-sm font-semibold mb-3">Agent đang kết nối</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-xs text-mut uppercase"><th class="py-2 font-semibold">Agent</th><th class="py-2 font-semibold">Số mục</th><th class="py-2 font-semibold">Đã nộp</th><th class="py-2 font-semibold">Mới nhất</th></tr></thead>
+              <tbody id="agentTbl"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-4">
+          <div class="card-s p-5">
+            <h3 class="text-sm font-semibold mb-2">Script gửi cho agent</h3>
+            <pre class="text-[11.5px] leading-relaxed bg-black/40 border border-bd rounded-lg p-4 overflow-x-auto text-sky-300" id="snip"></pre>
+            <button class="mt-3 px-3 py-1.5 rounded-lg bg-acc text-white text-xs font-semibold hover:opacity-90" id="copySnip">Copy script</button>
+          </div>
+          <div class="card-s p-5">
+            <h3 class="text-sm font-semibold mb-2">Định dạng một mục dữ liệu</h3>
+            <pre class="text-[11.5px] leading-relaxed bg-black/40 border border-bd rounded-lg p-4 overflow-x-auto text-violet-300">{
+  "id": "id-du-nhat-khong-dau",
   "title": "Tiêu đề cơ hội",
   "org": "Tổ chức",
   "url": "https://…",
   "category": "scholarship|research|grant|startup|gig|bounty|other",
   "score": 0-100,
-  "deadline": "YYYY-MM-DD" hoặc null,
-  "status": "open|applied|closed",
-  "source_agent": "tên-agent",
-  "tags": ["tag1","tag2"],
+  "deadline": "YYYY-MM-DD" | null,
+  "status": "open | new | interested | applying | submitted | done | skip",
+  "source_agent": "ten-agent",
+  "tags": ["tag1", "tag2"],
   "notes": "ghi chú ngắn"
 }</pre>
-            <div class="text-secondary small">Trùng theo <code>title+url+deadline</code> → tự gộp, không lo gửi lặp.</div>
-          </div></div></div>
+            <p class="text-xs text-mut mt-2">Trùng theo <code class="text-sky-400">title+url+deadline</code> → tự gộp. Không lo gửi lặp.</p>
+          </div>
         </div>
-      </div>
+      </section>
 
       <!-- BACKUP -->
-      <div id="tab-backup" class="hide">
-        <div class="card"><div class="card-body">
-          <div class="subheader mb-2">Sao lưu dữ liệu</div>
-          <p class="text-secondary">Dữ liệu sống trong repo GitHub của bạn — mỗi lần agent gửi là 1 commit có lịch sử vĩnh viễn. Tải snapshot hiện tại bất cứ lúc nào.</p>
-          <div class="d-flex gap-2">
-            <button class="btn btn-primary" id="dlJson"><i class="ti ti-download me-1"></i>Tải data.json</button>
-            <button class="btn" id="dlCsv"><i class="ti ti-file-download me-1"></i>Tải CSV</button>
-            <a class="btn btn-github" href="https://github.com/kotobuki09/opportunity-dashboard-free" target="_blank"><i class="ti ti-brand-github me-1"></i>Xem lịch sử commit</a>
+      <section id="tab-backup" class="hide">
+        <div class="card-s glow p-6 max-w-xl">
+          <h3 class="text-sm font-semibold mb-1">Dữ liệu & sao lưu</h3>
+          <p class="text-xs text-mut mb-4">Mọi thứ sống trong repo GitHub của bạn — mỗi lần agent gửi là 1 commit vĩnh viễn.</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="px-3 py-1.5 rounded-lg bg-acc text-white text-xs font-semibold hover:opacity-90" id="dlJson">Tải data.json</button>
+            <button class="px-3 py-1.5 rounded-lg border border-bd text-xs font-semibold hover:bg-pop" id="dlCsv">Tải CSV</button>
+            <a class="px-3 py-1.5 rounded-lg border border-bd text-xs font-semibold hover:bg-pop" href="https://github.com/kotobuki09/opportunity-dashboard-free/commits/main" target="_blank">Lịch sử commit</a>
           </div>
-        </div></div>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   </div>
 </div>
 
 <script>
-const CATS = {scholarship:'Học bổng/Fellowship',research:'Research visit',grant:'Grant',startup:'Startup',gig:'Kiếm tiền',bounty:'Bounty',other:'Khác'};
-const CATCOLORS = {scholarship:'#06b6d4',research:'#7c3aed',grant:'#10b981',startup:'#f59e0b',gig:'#3b82f6',bounty:'#ef4444',other:'#6b7280'};
-const STATUSES = {'':'Mọi trạng thái',new:'Mới',interested:'Quan tâm',applying:'Đang làm hồ sơ',submitted:'Đã nộp',done:'Đã tham gia',skip:'Bỏ qua'};
-const STATUS_COLOR = {new:'bg-cyan-lt',interested:'bg-blue-lt',applying:'bg-yellow-lt',submitted:'bg-indigo-lt',done:'bg-green-lt',skip:'bg-secondary-lt'};
-let DATA = [], ITEMS = [], charts = {};
+const CATS = {scholarship:'Học bổng',research:'Research visit',grant:'Grant',startup:'Startup',gig:'Kiếm tiền',bounty:'Bounty',other:'Khác'};
+const CATCOLORS = {scholarship:'#38bdf8',research:'#a78bfa',grant:'#34d399',startup:'#fbbf24',gig:'#60a5fa',bounty:'#f87171',other:'#9ca3af'};
+const STATUSES = {'':'Mọi trạng thái',new:'Mới',interested:'Quan tâm',applying:'Đang hồ sơ',submitted:'Đã nộp',done:'Đã tham gia',skip:'Bỏ qua'};
+const SBADGE = {new:'bg-sky-500/15 text-sky-400 border-sky-500/30',interested:'bg-blue-500/15 text-blue-400 border-blue-500/30',applying:'bg-amber-500/15 text-amber-400 border-amber-500/30',submitted:'bg-violet-500/15 text-violet-400 border-violet-500/30',done:'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',skip:'bg-zinc-500/15 text-zinc-400 border-zinc-500/30'};
+const OPENISH = s => !s || ['open','new','interested','applying'].includes(s);
+let DATA={items:[]}, ITEMS=[], charts={};
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -156,14 +219,16 @@ const dl = (name, text, type='application/json') => { const a=document.createEle
 async function load(){
   for(let a=0;a<3;a++){
     try{ const r=await fetch('data.json?ts='+Date.now()); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); }
-    catch(e){ console.error('load fail', e); await new Promise(rs=>setTimeout(rs,800)); }
+    catch(e){ await new Promise(rs=>setTimeout(rs,800)); }
   }
-  return {items:[], generatedAt:''};
+  return {items:[]};
 }
+
+function isOpen(i){ return OPENISH(i.status); }
 
 function render(){
   ITEMS = DATA.items || [];
-  $('#genAt').textContent = `${ITEMS.length} mục · cập nhật ${new Date(DATA.generatedAt||Date.now()).toLocaleString('vi-VN')}`;
+  $('#genAt').textContent = `${ITEMS.length} cơ hội`;
   $('#navCount').textContent = ITEMS.length;
   $('#fCat').innerHTML = '<option value="">Mọi loại</option>' + Object.entries(CATS).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
   $('#fStatus').innerHTML = Object.entries(STATUSES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
@@ -205,54 +270,91 @@ print(urllib.request.urlopen(req).status)  # 200 = OK`;
 }
 
 function renderStats(){
-  const open = ITEMS.filter(i=>(i.status||'open')==='open' || ['new','interested','applying'].includes(i.status));
+  const open = ITEMS.filter(isOpen);
   const hi = open.filter(i=>(i.score||0)>=65);
   const soon = open.filter(i=>{const d=days(i.deadline); return d!==null&&0<=d&&d<=30;});
   const past = open.filter(i=>{const d=days(i.deadline); return d!==null&&d<0;});
-  const nAgents = new Set(ITEMS.map(i=>i.source_agent).filter(Boolean)).size;
+  const nA = new Set(ITEMS.map(i=>i.source_agent).filter(Boolean)).size;
   const cards = [
-    ['ti-door-enter','Đang mở', open.length,'text-cyan'],
-    ['ti-star','Phù hợp cao (≥65)', hi.length,'text-yellow'],
-    ['ti-calendar-time','Sắp hạn 30 ngày', soon.length,'text-orange'],
-    ['ti-alert-triangle','Quá hạn', past.length,'text-red'],
-    ['ti-robots','Agent gửi', nAgents,'text-blue'],
-    ['ti-stack','Tổng cơ hội', ITEMS.length,'text-lime'],
+    ['Đang mở', open.length, 'text-sky-400', '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>'],
+    ['Phù hợp cao', hi.length, 'text-amber-400', '<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>'],
+    ['Sắp hạn 30 ngày', soon.length, 'text-orange-400', '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'],
+    ['Quá hạn', past.length, 'text-red-400', '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/>'],
+    ['Agent', nA, 'text-violet-400', '<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8"/>'],
+    ['Tổng', ITEMS.length, 'text-emerald-400', '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>'],
   ];
-  $('#statCards').innerHTML = cards.map(([ic,label,val,cl])=>`
-    <div class="col-6 col-md-4 col-xl-2"><div class="card stat-card"><div class="card-body p-3">
-      <div class="d-flex align-items-center mb-1"><span class="avatar avatar-sm bg-azure-lt me-2"><i class="ti ${ic} ${cl}"></i></span><span class="text-secondary small">${label}</span></div>
-      <div class="h1 m-0">${val}</div>
-    </div></div></div>`).join('');
+  $('#statCards').innerHTML = cards.map(([label,val,cl,icon])=>`
+    <div class="card-s p-4 hover:border-slate-500/50 transition-colors">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs text-mut font-medium">${label}</span>
+        <svg class="${cl}" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${icon}</svg>
+      </div>
+      <div class="text-3xl font-extrabold tabular-nums tracking-tight">${val}</div>
+    </div>`).join('');
+}
+
+function baseOpts(){
+  return { theme:{mode:'dark'}, chart:{background:'transparent', fontFamily:'Inter', toolbar:{show:false}},
+    grid:{borderColor:'hsl(240 3.7% 14%)', strokeDashArray:3},
+    tooltip:{theme:'dark'}, dataLabels:{enabled:false} };
 }
 
 function renderCharts(){
-  Object.values(charts).forEach(c=>c&&c.destroy());
+  Object.values(charts).forEach(c=>c&&c.destroy()); charts={};
   const weeks = {};
   ITEMS.forEach(i=>{const d=days(i.deadline); if(d!==null&&0<=d&&d<18*7){const w=Math.floor(d/7); weeks[w]=(weeks[w]||0)+1;}});
   const labels=[],vals=[];
-  for(let w=0;w<18;w++){ labels.push(w===0?'Tuần này':'+'+w+'w'); vals.push(weeks[w]||0); }
-  charts.weeks = new Chart($('#chWeeks'), {type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:'rgba(6,191,212,.6)', borderRadius:4}]}, options:{plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}}}});
+  for(let w=0;w<18;w++){ labels.push(w===0?'này':'+'+w); vals.push(weeks[w]||0); }
+  const b = baseOpts();
+  charts.weeks = new ApexCharts($('#chWeeks'), {...b, chart:{...b.chart, type:'area', height:230},
+    series:[{name:'Deadline', data:vals}], labels,
+    colors:['#38bdf8'], stroke:{curve:'smooth', width:2.5},
+    fill:{type:'gradient', gradient:{shadeIntensity:1, opacityFrom:.45, opacityTo:.02, stops:[0,95]}},
+    xaxis:{categories:labels, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px'}}},
+    yaxis:{labels:{style:{fontSize:'10px'}}}});
+  charts.weeks.render();
+
   const cats={}; ITEMS.forEach(i=>{const c=i.category||'other'; cats[c]=(cats[c]||0)+1;});
   const ck=Object.keys(cats).sort((a,b)=>cats[b]-cats[a]);
-  charts.cat = new Chart($('#chCat'), {type:'doughnut', data:{labels:ck.map(k=>CATS[k]||k), datasets:[{data:ck.map(k=>cats[k]), backgroundColor:ck.map(k=>CATCOLORS[k]||'#6b7280')}]}, options:{plugins:{legend:{position:'bottom', labels:{boxWidth:10, font:{size:10}}}}}});
+  const b2 = baseOpts();
+  charts.cat = new ApexCharts($('#chCat'), {...b2, chart:{...b2.chart, type:'donut', height:240},
+    series:ck.map(k=>cats[k]), labels:ck.map(k=>CATS[k]||k),
+    colors:ck.map(k=>CATCOLORS[k]||'#9ca3af'),
+    stroke:{width:2, colors:['hsl(240 10% 5.5%)']},
+    legend:{position:'bottom', fontSize:'11px', markers:{radius:12}},
+    plotOptions:{pie:{donut:{size:'68%'}}}});
+  charts.cat.render();
+
   const ag={}; ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; ag[a]=(ag[a]||0)+1;});
   const ak=Object.keys(ag).sort((a,b)=>ag[b]-ag[a]).slice(0,8);
-  charts.ag = new Chart($('#chAgents'), {type:'bar', data:{labels:ak, datasets:[{data:ak.map(k=>ag[k]), backgroundColor:'rgba(124,58,237,.6)', borderRadius:4}]}, options:{indexAxis:'y', plugins:{legend:{display:false}}}});
-  const isOpen = i => !i.status || ['open','new','interested','applying'].includes(i.status);
-  const up = ITEMS.filter(i=>i.deadline&&isOpen(i)&&days(i.deadline)>=-1).sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,15);
-  $('#upcoming').innerHTML = up.map(i=>{const d=days(i.deadline);
-    return `<div class="ddl-row"><span class="ddl-days ${d<=7?'text-danger':d<=14?'text-warning':'text-secondary'}">${d}</span>
-      <div style="flex:1;min-width:0"><a class="row-link d-block text-truncate" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a>
-      <span class="text-secondary small">${esc(CATS[i.category]||i.category||'')}</span></div>
-      <span class="badge ${STATUS_COLOR[i.status]||'bg-secondary-lt'}">${esc(STATUSES[i.status]||'Mới')}</span></div>`;}).join('');
+  const b3 = baseOpts();
+  charts.ag = new ApexCharts($('#chAgents'), {...b3, chart:{...b3.chart, type:'bar', height:240},
+    series:[{name:'Mục', data:ak.map(k=>ag[k])}],
+    colors:['#a78bfa'], plotOptions:{bar:{borderRadius:6, horizontal:true, barHeight:'55%'}},
+    xaxis:{categories:ak, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px'}}}});
+  charts.ag.render();
+
+  const up = ITEMS.filter(i=>i.deadline&&isOpen(i)).map(i=>({i,d:days(i.deadline)}))
+    .filter(x=>x.d>=-7).sort((a,b)=>a.d-b.d).slice(0,12);
+  $('#upcoming').innerHTML = up.length ? up.map(({i,d})=>`
+    <a href="${esc(i.url||'#')}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
+      <span class="text-lg font-extrabold tabular-nums w-10 text-right ${d<0?'text-red-400':d<=7?'text-orange-400':d<=14?'text-amber-300':'text-mut'}">${d}</span>
+      <span class="w-px self-stretch bg-bd"></span>
+      <span class="flex-1 min-w-0">
+        <span class="block text-[13px] font-medium truncate group-hover:text-sky-400">${esc(i.title)}</span>
+        <span class="text-[11px] text-mut">${esc(CATS[i.category]||i.category||'')}</span>
+      </span>
+      <svg class="text-mut group-hover:text-sky-400 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+    </a>`).join('') : '<div class="text-xs text-mut p-3">Không có hạn nào gần đây.</div>';
 }
 
 function renderAgents(){
   const ag={};
   ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; (ag[a]=ag[a]||{n:0,ap:0,last:''}); ag[a].n++; if(i.status==='submitted')ag[a].ap++; const t=String(i.updatedAt||''); if(t>ag[a].last)ag[a].last=t;});
   $('#agentTbl').innerHTML = Object.entries(ag).sort((a,b)=>b[1].n-a[1].n).map(([a,s])=>`
-    <tr><td><span class="avatar avatar-sm bg-blue-lt me-2"><i class="ti ti-robot"></i></span>${esc(a)}</td>
-    <td>${s.n}</td><td>${s.ap}</td><td class="text-secondary">${s.last?new Date(s.last).toLocaleString('vi-VN'):'—'}</td></tr>`).join('');
+    <tr><td class="py-2.5 font-medium"><span class="inline-flex w-6 h-6 rounded-full bg-violet-500/20 text-violet-400 items-center justify-center text-[10px] font-bold mr-2">${esc(a[0].toUpperCase())}</span>${esc(a)}</td>
+    <td class="tabular-nums">${s.n}</td><td class="tabular-nums text-mut">${s.ap}</td>
+    <td class="text-mut text-xs">${s.last?new Date(s.last).toLocaleString('vi-VN'):'—'}</td></tr>`).join('');
 }
 
 function renderTable(){
@@ -262,36 +364,41 @@ function renderTable(){
     if(fc && (i.category||'other')!==fc) return false;
     if(fs && (i.status||'new')!==fs) return false;
     if(fa && (i.source_agent||'')!==fa) return false;
-    if(onlyOpen && ['submitted','done','skip','closed','applied'].includes(i.status)) return false;
+    if(onlyOpen && !OPENISH(i.status)) return false;
     return true;});
   const cmp = {score:(a,b)=>(b.score||0)-(a.score||0),
     deadline:(a,b)=>(a.deadline||'9999').localeCompare(b.deadline||'9999'),
     new:(a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))};
   rows.sort(cmp[sort]);
-  $('#countChip').textContent = rows.length + ' mục';
+  $('#countChip').textContent = `${rows.length} / ${ITEMS.length} cơ hội`;
   $('#itemsTbl').innerHTML = rows.slice(0,400).map(i=>{
-    const s=i.score||0, sc=s>=65?'bg-green-lt':s>=45?'bg-yellow-lt':'bg-secondary-lt';
-    const d=days(i.deadline), dcls=d===null?'':d<0?'deadline-past':d<=14?'deadline-soon':'';
+    const s=i.score||0, sc=s>=65?'bg-emerald-500/15 text-emerald-400 border-emerald-500/30':s>=45?'bg-amber-500/15 text-amber-400 border-amber-500/30':'bg-zinc-500/15 text-zinc-400 border-zinc-500/30';
+    const d=days(i.deadline);
+    const dhtml = i.deadline
+      ? `<span class="${d<0?'text-red-400 line-through':d<=14?'text-amber-300 font-semibold':''}">${i.deadline}</span> <span class="text-[11px] text-mut">${d}d</span>`
+      : '<span class="text-mut">—</span>';
     const tags=String(Array.isArray(i.tags)?i.tags.join(','):i.tags||'').split(',').filter(Boolean).slice(0,3);
     return `<tr>
-      <td><span class="badge ${sc} score-pill">${s}</span></td>
-      <td style="max-width:24rem"><a class="row-link fw-medium d-block text-truncate" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-secondary small">${esc(i.org||'')}</span></td>
-      <td><span class="tag-chip" style="border-color:${CATCOLORS[i.category]||'#6b7280'};color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
-      <td class="text-secondary small">${esc(i.source_agent||'—')}</td>
-      <td class="${dcls}">${i.deadline?i.deadline+(d!==null?` <span class="text-secondary small">(${d}d)</span>`:''):'—'}</td>
-      <td><span class="badge ${STATUS_COLOR[i.status]||'bg-cyan-lt'}">${esc(STATUSES[i.status]||'Mới')}</span></td>
-      <td class="text-secondary">${tags.map(t=>`<span class="tag-chip me-1">${esc(t)}</span>`).join('')}</td>
+      <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${s}</span></td>
+      <td class="px-4 py-3 max-w-[26rem]"><a class="block font-medium truncate hover:text-sky-400" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
+      <td class="px-4 py-3"><span class="text-xs font-medium" style="color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
+      <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
+      <td class="px-4 py-3 text-xs whitespace-nowrap">${dhtml}</td>
+      <td class="px-4 py-3"><span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span></td>
+      <td class="px-4 py-3 hidden lg:table-cell">${tags.map(t=>`<span class="text-[11px] text-mut border border-bd rounded-full px-2 py-0.5 mr-1">${esc(t)}</span>`).join('')}</td>
     </tr>`;}).join('');
 }
 
-document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click', e=>{
-  e.preventDefault();
-  document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active', x===el));
+const TITLES = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', backup:'Dữ liệu'};
+document.querySelectorAll('#nav .nav-item').forEach(el=>el.addEventListener('click', ()=>{
+  document.querySelectorAll('#nav .nav-item').forEach(x=>x.classList.toggle('active', x===el));
   ['ov','list','agents','backup'].forEach(t=>$('#tab-'+t).classList.toggle('hide', t!==el.dataset.tab));
-  $('#pageTitle').textContent = {ov:'Tổng quan', list:'Cơ hội', agents:'Agent & API', backup:'Backup'}[el.dataset.tab];
+  $('#pageTitle').textContent = TITLES[el.dataset.tab];
   window.scrollTo(0,0);
 }));
 ['q','fCat','fStatus','fAgent','sort','onlyOpen'].forEach(id=>$('#'+id).addEventListener('input', renderTable));
+$('#qTop').addEventListener('input', e=>{ $('#q').value=e.target.value;
+  document.querySelector('[data-tab="list"]').click(); renderTable(); });
 $('#dlJson').onclick = ()=>dl('data.json', JSON.stringify(DATA,null,2));
 $('#dlCsv').onclick = ()=>{
   const ks=['id','title','org','url','category','score','deadline','status','source_agent'];
@@ -299,7 +406,7 @@ $('#dlCsv').onclick = ()=>{
   dl('opportunities.csv', csv, 'text/csv');};
 $('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
 
-function init(){ load().then(d=>{ DATA=d; ITEMS=d.items||[]; render(); if(!ITEMS.length) setTimeout(init, 1500); }).catch(e=>{ console.error('init fail', e); setTimeout(init, 2000); }); }
+function init(){ load().then(d=>{ DATA=d; render(); if(!(d.items||[]).length) setTimeout(init,1500); }).catch(()=>setTimeout(init,2000)); }
 window.addEventListener('load', init);
 </script>
 </body>
