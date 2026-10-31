@@ -103,9 +103,9 @@ tailwind.config = {
           </div>
           <div class="card-s p-5 lg:col-span-3">
             <h3 class="text-sm font-semibold mb-2">Phân bố</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div id="chCat"></div>
-              <div id="chAgents"></div>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div id="chCat" class="min-w-0"></div>
+              <div id="chAgents" class="min-w-0"></div>
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ tailwind.config = {
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
-                <tr class="text-left text-xs text-mut uppercase tracking-wide">
+                <tr class="text-left text-xs text-mut uppercase tracking-wide whitespace-nowrap">
                   <th class="px-4 py-2.5 font-semibold">Điểm</th>
                   <th class="px-4 py-2.5 font-semibold">Cơ hội</th>
                   <th class="px-4 py-2.5 font-semibold">Loại</th>
@@ -335,7 +335,7 @@ function renderCharts(){
   charts.ag.render();
 
   const up = ITEMS.filter(i=>i.deadline&&isOpen(i)).map(i=>({i,d:days(i.deadline)}))
-    .filter(x=>x.d>=-7).sort((a,b)=>a.d-b.d).slice(0,12);
+    .filter(x=>x.d>=0).sort((a,b)=>a.d-b.d).slice(0,12);
   $('#upcoming').innerHTML = up.length ? up.map(({i,d})=>`
     <a href="${esc(i.url||'#')}" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-pop transition-colors group">
       <span class="text-lg font-extrabold tabular-nums w-10 text-right ${d<0?'text-red-400':d<=7?'text-orange-400':d<=14?'text-amber-300':'text-mut'}">${d}</span>
@@ -381,7 +381,7 @@ function renderTable(){
     return `<tr>
       <td class="px-4 py-3"><span class="badge-b ${sc} tabular-nums">${s}</span></td>
       <td class="px-4 py-3 max-w-[26rem]"><a class="block font-medium truncate hover:text-sky-400" href="${esc(i.url||'#')}" target="_blank">${esc(i.title)}</a><span class="text-xs text-mut">${esc(i.org||'')}</span></td>
-      <td class="px-4 py-3"><span class="text-xs font-medium" style="color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
+      <td class="px-4 py-3"><span class="badge-b" style="background:${CATCOLORS[i.category]||'#9ca3af'}22;color:${CATCOLORS[i.category]||'#9ca3af'}">${esc(CATS[i.category]||i.category||'Khác')}</span></td>
       <td class="px-4 py-3 text-xs text-mut hidden md:table-cell">${esc(i.source_agent||'—')}</td>
       <td class="px-4 py-3 text-xs whitespace-nowrap">${dhtml}</td>
       <td class="px-4 py-3"><span class="badge-b ${SBADGE[i.status]||SBADGE.new}">${esc(STATUSES[i.status]||'Mới')}</span></td>
