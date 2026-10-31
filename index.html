@@ -317,7 +317,7 @@ function renderCharts(){
   const cats={}; ITEMS.forEach(i=>{const c=i.category||'other'; cats[c]=(cats[c]||0)+1;});
   const ck=Object.keys(cats).sort((a,b)=>cats[b]-cats[a]);
   const b2 = baseOpts();
-  charts.cat = new ApexCharts($('#chCat'), {...b2, chart:{...b2.chart, type:'donut', height:240},
+  charts.cat = new ApexCharts($('#chCat'), {...b2, chart:{...b2.chart, type:'donut', height:260},
     series:ck.map(k=>cats[k]), labels:ck.map(k=>CATS[k]||k),
     colors:ck.map(k=>CATCOLORS[k]||'#9ca3af'),
     stroke:{width:2, colors:['hsl(240 10% 5.5%)']},
@@ -328,7 +328,7 @@ function renderCharts(){
   const ag={}; ITEMS.forEach(i=>{const a=i.source_agent||'unknown'; ag[a]=(ag[a]||0)+1;});
   const ak=Object.keys(ag).sort((a,b)=>ag[b]-ag[a]).slice(0,8);
   const b3 = baseOpts();
-  charts.ag = new ApexCharts($('#chAgents'), {...b3, chart:{...b3.chart, type:'bar', height:240},
+  charts.ag = new ApexCharts($('#chAgents'), {...b3, chart:{...b3.chart, type:'bar', height:260},
     series:[{name:'Mục', data:ak.map(k=>ag[k])}],
     colors:['#a78bfa'], plotOptions:{bar:{borderRadius:6, horizontal:true, barHeight:'55%'}},
     xaxis:{categories:ak, axisBorder:{show:false}, axisTicks:{show:false}, labels:{style:{fontSize:'10px'}}}});
