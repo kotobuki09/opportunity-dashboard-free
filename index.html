@@ -298,7 +298,8 @@ $('#dlCsv').onclick = ()=>{
   dl('opportunities.csv', csv, 'text/csv');};
 $('#copySnip').onclick = ()=>navigator.clipboard.writeText($('#snip').textContent);
 
-load().then(render);
+window.addEventListener('unhandledrejection', e=>console.error('rejection', e.reason));
+load().then(render).catch(e=>console.error('init fail', e));
 </script>
 </body>
 </html>
