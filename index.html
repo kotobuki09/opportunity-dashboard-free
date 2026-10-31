@@ -217,7 +217,7 @@ function renderItems() {
       const sc = (i.score||0) >= CFG.high_fit ? 's-hi' : (i.score||0) >= 45 ? 's-mid' : 's-lo';
       const d = daysUntil(i.deadline);
       const dc = d !== null && d < 0 ? 'var(--bad)' : d !== null && d <= 7 ? 'var(--warn)' : '';
-      const tags = (i.tags||[]).slice ? (i.tags||[]).slice(0,3).map(t=>`<span class="chip">${esc(t)}</span>`).join('') : String(i.tags||'').split(',').filter(Boolean).slice(0,3).map(t=>`<span class="chip">${esc(t)}</span>`).join('');
+      const tags = String(Array.isArray(i.tags) ? i.tags.join(',') : (i.tags || '')).split(',').filter(Boolean).slice(0,3).map(t=>`<span class="chip">${esc(t)}</span>`).join('');
       const note = i.note ? `<div class="note">${esc(i.note)}</div>` : '';
       return `<tr><td><a href="${esc(i.url||'#')}" target="_blank" rel="noopener">${esc(i.title)}</a><div style="margin-top:3px">${tags}<span class="muted">${esc(i.org||'')}</span></div>${note}</td>
       <td>${esc(i.category||'')}</td><td class="score ${sc}">${i.score||0}</td>
